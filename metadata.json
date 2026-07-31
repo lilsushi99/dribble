@@ -1,0 +1,6 @@
+{
+  "name": "KINETIC Studio",
+  "description": "Luxury creative studio web application featuring physical 3D card deck scrolling, authentic nebula hero, comic strip panel carousel, and editorial portfolio showcase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

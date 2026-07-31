@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 36" fill="none">
+  <path d="M10 6L2 18L10 30H16L8 18L16 6H10Z" fill="#E6A800"/>
+  <path d="M20 6V30H25V20L34 30H41L31 19L40 6H33L25 16V6H20Z" fill="#FFFFFF"/>
+  <text x="46" y="24" fill="#FFFFFF" font-family="'Outfit', 'Inter', sans-serif" font-size="18" font-weight="600" letter-spacing="2">KINETIC</text>
+  <circle cx="152" cy="18" r="3" fill="#E6A800"/>
+</svg>
