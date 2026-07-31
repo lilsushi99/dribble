@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
@@ -16,9 +16,26 @@ interface ProjectsPageProps {
 
 export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNavigateToContact }: ProjectsPageProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsRevealed(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   const projects: Project[] = [
@@ -121,23 +138,33 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
   ];
 
   return (
-    <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3]">
-      {/* Header (No Tag) */}
+    <div ref={containerRef} className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3] overflow-hidden">
+      {/* Header (White text brightness reveal, yellow text static) */}
       <div className="space-y-4 max-w-3xl pt-8">
         <h1 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight leading-[1.08]">
-          Selected Works & <span className="text-[#E6A800]">Commissions</span>
+          <span
+            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
+            style={{
+              opacity: isRevealed ? 1 : 0.35,
+              filter: isRevealed ? 'brightness(1)' : 'brightness(0.35)',
+            }}
+          >
+            Selected Works &&nbsp;
+          </span>
+          <span className="text-[#E6A800]">Commissions</span>
         </h1>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] font-normal leading-relaxed">
           An editorial archive of interactive monuments, physical artefacts, brand identities, and spatial structures built between 2018 and present.
         </p>
       </div>
 
-      {/* Editorial Masonry Layout (Varied Image Sizes) - NO tabs, NO filters, NO categories */}
+      {/* Editorial Masonry Layout (Varied Image Sizes) - Alternating card entry assembly */}
       <div className="grid grid-cols-12 gap-3 sm:gap-4 pt-4">
-        {projects.map((proj) => {
+        {projects.map((proj, idx) => {
           const isHovered = hoveredId === proj.id;
           const isAnythingHovered = hoveredId !== null;
           const isOther = isAnythingHovered && !isHovered;
+          const isEven = idx % 2 === 0;
 
           return (
             <div
@@ -147,6 +174,19 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
                   ? 'z-30 scale-[1.02] shadow-2xl shadow-black border-white/50'
                   : 'z-10'
               } ${isOther ? 'opacity-40 filter brightness-75 scale-[0.99]' : 'opacity-100'}`}
+              style={{
+                transform: isRevealed
+                  ? isHovered
+                    ? 'scale(1.02)'
+                    : isOther
+                    ? 'scale(0.99)'
+                    : 'translate3d(0, 0, 0)'
+                  : isEven
+                  ? 'translate3d(-24px, 0, 0)'
+                  : 'translate3d(24px, 0, 0)',
+                opacity: isRevealed ? (isOther ? 0.4 : 1) : 0,
+                transition: `transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 60}ms, opacity 0.6s ease-out ${idx * 60}ms, border-color 0.3s ease, filter 0.3s ease`,
+              }}
               onMouseEnter={() => setHoveredId(proj.id)}
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => onSelectProject(proj)}

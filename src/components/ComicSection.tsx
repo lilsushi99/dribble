@@ -1,9 +1,14 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
 import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
+import InteractiveHeading from './InteractiveHeading';
 
 export default function ComicSection() {
+  const [isIlluminated, setIsIlluminated] = useState(false);
+  const [isAssembled, setIsAssembled] = useState(false);
+
+  const sectionRef = useRef<HTMLDivElement | null>(null);
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
   const scrollRef3 = useRef<HTMLDivElement | null>(null);
@@ -26,7 +31,26 @@ export default function ComicSection() {
     { id: 'p3-3', title: 'Chapter IX: Light', image: comic2, chapter: '09' },
   ];
 
-  // Infinite smooth upward reel animation - continuous, never pauses on hover
+  // Intersection observer for heading illumination and column assembly
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIlluminated(true);
+          setIsAssembled(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Infinite smooth upward reel animation - continuous, never pauses on hover or click
   useEffect(() => {
     let animId: number;
     let pos1 = 0;
@@ -65,28 +89,39 @@ export default function ComicSection() {
 
   return (
     <section
+      ref={sectionRef}
       id="section-studio"
-      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-center"
+      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-center overflow-hidden"
     >
-      {/* Section Header */}
+      {/* Section Header with First Word 100% Opacity & Hover Interaction */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
-        <h2 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight">
-          Sequential storyboards rendered in continuous motion.
-        </h2>
+        <InteractiveHeading
+          as="h2"
+          firstWord="Sequential"
+          middleText="storyboards rendered in continuous motion."
+          isIlluminated={isIlluminated}
+          className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
+        />
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-2xl mx-auto font-normal leading-relaxed">
           Dynamic visual narratives rendered across independent manga reels.
         </p>
       </div>
 
-      {/* Independent Three Columns - Equally spaced & vertically centered relative to taller center column */}
+      {/* Independent Three Columns - Perfectly Square Corners (rounded-none) & Coordinated Assembly */}
       <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 items-center justify-center my-auto">
-        {/* Column 1: Left Column (Height 480px / 560px) */}
-        <div className="relative overflow-hidden h-[480px] sm:h-[560px] border border-white/15 bg-black rounded-xl shadow-2xl">
+        {/* Column 1: Left Column (Slides gently from left) */}
+        <div
+          className="relative overflow-hidden h-[480px] sm:h-[560px] border border-white/15 bg-black rounded-none shadow-2xl transition-all duration-700 ease-out will-change-transform"
+          style={{
+            transform: isAssembled ? 'translate3d(0, 0, 0)' : 'translate3d(-40px, 0, 0)',
+            opacity: isAssembled ? 1 : 0,
+          }}
+        >
           <div ref={scrollRef1} className="will-change-transform flex flex-col gap-0 p-0">
             {[...panelSet1, ...panelSet1].map((panel, idx) => (
               <div
                 key={`${panel.id}-${idx}`}
-                className="relative aspect-[6/10] w-full border-b border-white/10 bg-black p-0 group overflow-hidden"
+                className="relative aspect-[6/10] w-full border-b border-white/10 bg-black p-0 group overflow-hidden rounded-none"
               >
                 <img
                   src={panel.image}
@@ -103,13 +138,19 @@ export default function ComicSection() {
           </div>
         </div>
 
-        {/* Column 2: Center Column (TALLER: Height 540px / 640px) */}
-        <div className="relative overflow-hidden h-[540px] sm:h-[640px] border border-white/20 bg-black shadow-2xl z-10 rounded-xl">
+        {/* Column 2: Center Column (Drops softly from above) */}
+        <div
+          className="relative overflow-hidden h-[540px] sm:h-[640px] border border-white/20 bg-black shadow-2xl z-10 rounded-none transition-all duration-700 ease-out delay-100 will-change-transform"
+          style={{
+            transform: isAssembled ? 'translate3d(0, 0, 0)' : 'translate3d(0, -40px, 0)',
+            opacity: isAssembled ? 1 : 0,
+          }}
+        >
           <div ref={scrollRef2} className="will-change-transform flex flex-col gap-0 p-0">
             {[...panelSet2, ...panelSet2].map((panel, idx) => (
               <div
                 key={`${panel.id}-${idx}`}
-                className="relative aspect-[6/12] w-full border-b border-white/10 bg-black p-0 group overflow-hidden"
+                className="relative aspect-[6/12] w-full border-b border-white/10 bg-black p-0 group overflow-hidden rounded-none"
               >
                 <img
                   src={panel.image}
@@ -126,13 +167,19 @@ export default function ComicSection() {
           </div>
         </div>
 
-        {/* Column 3: Right Column (Height 480px / 560px - Identical to left) */}
-        <div className="relative overflow-hidden h-[480px] sm:h-[560px] border border-white/15 bg-black rounded-xl shadow-2xl">
+        {/* Column 3: Right Column (Slides gently from right) */}
+        <div
+          className="relative overflow-hidden h-[480px] sm:h-[560px] border border-white/15 bg-black rounded-none shadow-2xl transition-all duration-700 ease-out delay-200 will-change-transform"
+          style={{
+            transform: isAssembled ? 'translate3d(0, 0, 0)' : 'translate3d(40px, 0, 0)',
+            opacity: isAssembled ? 1 : 0,
+          }}
+        >
           <div ref={scrollRef3} className="will-change-transform flex flex-col gap-0 p-0">
             {[...panelSet3, ...panelSet3].map((panel, idx) => (
               <div
                 key={`${panel.id}-${idx}`}
-                className="relative aspect-[6/10] w-full border-b border-white/10 bg-black p-0 group overflow-hidden"
+                className="relative aspect-[6/10] w-full border-b border-white/10 bg-black p-0 group overflow-hidden rounded-none"
               >
                 <img
                   src={panel.image}
@@ -152,3 +199,4 @@ export default function ComicSection() {
     </section>
   );
 }
+

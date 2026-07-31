@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import Lenis from 'lenis';
 import Navbar from './components/Navbar';
 import FooterSection from './components/FooterSection';
 import CustomCursor from './components/CustomCursor';
@@ -13,6 +14,8 @@ import ProjectsPage from './pages/ProjectsPage';
 import BlogPage from './pages/BlogPage';
 import ContactPage from './pages/ContactPage';
 
+import { AdminLayout } from './admin/AdminLayout';
+import { ShieldCheck, Sparkles } from 'lucide-react';
 import { Project } from './types';
 
 export default function App() {
@@ -21,6 +24,44 @@ export default function App() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Initialize Lenis Smooth Scroll only for public pages
+  useEffect(() => {
+    if (isAdminRoute) return;
+
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, [isAdminRoute]);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  // Render Admin Dashboard Layout directly if on /admin
+  if (isAdminRoute) {
+    return <AdminLayout onViewWebsite={() => navigate('/')} />;
+  }
 
   // Determine active route name for Navbar highlight
   const getActiveRoute = () => {
@@ -45,6 +86,16 @@ export default function App() {
       {/* Custom Cursor & Liquid Membrane Effects */}
       <CustomCursor />
       <LiquidMembrane />
+
+      {/* Floating Admin Trigger */}
+      <button
+        onClick={() => navigate('/admin')}
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 backdrop-blur-md border border-blue-400/40 transition-all hover:scale-105 active:scale-95 cursor-pointer group"
+        title="Open KINETIC Admin Engine"
+      >
+        <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+        <span>ADMIN PANEL</span>
+      </button>
 
       {/* Navbar with centered navigation links */}
       <Navbar
@@ -120,3 +171,4 @@ export default function App() {
     </div>
   );
 }
+

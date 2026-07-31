@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
+import InteractiveHeading from './InteractiveHeading';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -18,6 +19,25 @@ export default function ProjectsSection({
   onViewAllProjects,
 }: ProjectsSectionProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsRevealed(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const projects: Project[] = [
     {
@@ -96,25 +116,32 @@ export default function ProjectsSection({
 
   return (
     <section
+      ref={sectionRef}
       id="section-projects"
-      className="relative w-full min-h-screen py-24 px-6 sm:px-12 bg-[#050505] flex flex-col justify-between"
+      className="relative w-full min-h-screen py-24 px-6 sm:px-12 bg-[#050505] flex flex-col justify-between overflow-hidden"
     >
-      {/* Section Header */}
+      {/* Section Header with First Word 100% Opacity & Hover Interaction */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
-        <h2 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight">
-          Selected works pinned in <span className="text-[#E6A800]">architectural unity</span>.
-        </h2>
+        <InteractiveHeading
+          as="h2"
+          firstWord="Selected"
+          middleText="works pinned in"
+          yellowText="architectural unity."
+          isIlluminated={isRevealed}
+          className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
+        />
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-xl mx-auto font-normal leading-relaxed">
           Hover over any project artwork to elevate its visual detail and mute surrounding elements.
         </p>
       </div>
 
-      {/* Irregular Masonry Grid - Very tight spacing (almost touching) */}
+      {/* Irregular Masonry Grid - Assembles naturally from alternating directions */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-12 gap-1.5 sm:gap-2">
-        {projects.map((proj) => {
+        {projects.map((proj, idx) => {
           const isHovered = hoveredId === proj.id;
           const isAnythingHovered = hoveredId !== null;
           const isOther = isAnythingHovered && !isHovered;
+          const isEven = idx % 2 === 0;
 
           return (
             <div
@@ -122,6 +149,19 @@ export default function ProjectsSection({
               className={`${proj.gridSpan} relative group cursor-pointer transition-all duration-500 rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0c] ${
                 isHovered ? 'z-30 scale-[1.02] shadow-2xl shadow-black border-white/40' : 'z-10'
               } ${isOther ? 'opacity-35 filter brightness-75 scale-[0.99]' : 'opacity-100'}`}
+              style={{
+                transform: isRevealed
+                  ? isHovered
+                    ? 'scale(1.02)'
+                    : isOther
+                    ? 'scale(0.99)'
+                    : 'translate3d(0, 0, 0)'
+                  : isEven
+                  ? 'translate3d(-24px, 0, 0)'
+                  : 'translate3d(24px, 0, 0)',
+                opacity: isRevealed ? (isOther ? 0.35 : 1) : 0,
+                transition: `transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 80}ms, opacity 0.6s ease-out ${idx * 80}ms, border-color 0.3s ease, filter 0.3s ease`,
+              }}
               onMouseEnter={() => setHoveredId(proj.id)}
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => onSelectProject?.(proj)}

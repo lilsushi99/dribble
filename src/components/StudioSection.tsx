@@ -1,4 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
+import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
+import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
+import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
+import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
+import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
+import InteractiveHeading from './InteractiveHeading';
 
 interface Metric {
   id: string;
@@ -7,60 +13,30 @@ interface Metric {
   suffix: string;
   prefix?: string;
   current: number;
-}
-
-interface Testimonial {
-  quote: string;
-  author: string;
-  role: string;
-  company: string;
+  thumbImgs: string[];
 }
 
 export default function StudioSection() {
-  const [hasAnimated, setHasAnimated] = useState(false);
+  const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
   const initialMetrics: Metric[] = [
-    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0 },
-    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0 },
-    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0 },
-    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0 },
-    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0 },
+    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, p1Img, p2Img] },
+    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImgs: [comic2, comic3, p1Img, p2Img, comic1] },
+    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImgs: [comic3, p1Img, p2Img, comic1, comic2] },
+    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImgs: [p1Img, p2Img, comic1, comic2, comic3] },
+    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImgs: [p2Img, comic1, comic2, comic3, p1Img] },
   ];
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
 
-  const testimonials: Testimonial[] = [
-    {
-      quote:
-        'KINETIC approached our brand architecture with the gravity of monumental sculpture. Their spatial and digital systems redefined our global positioning overnight.',
-      author: 'Marcus Vance',
-      role: 'Chief Creative Officer',
-      company: 'Vanguard Orbital',
-    },
-    {
-      quote:
-        'In an industry saturated with disposable AI templates, KINETIC builds digital monuments. Their attention to physical scroll inertia and typographic hierarchy is unmatched.',
-      author: 'Evelyn Kuroda',
-      role: 'Founding Director',
-      company: 'Kuroda Museum Tokyo',
-    },
-    {
-      quote:
-        'Working with KINETIC felt like commissioning a custom architectural pavilion. Every detail was handcrafted with extraordinary discipline.',
-      author: 'Julian Thorne',
-      role: 'Head of Brand',
-      company: 'Atelier Nocturne London',
-    },
-  ];
-
-  // Intersection Observer to trigger counting numbers from 0 when section enters viewport
+  // Intersection Observer to trigger counting numbers every time section enters viewport
   useEffect(() => {
+    let animFrame: number;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-
+        if (entry.isIntersecting) {
           const duration = 2000; // 2 seconds count up
           const startTime = performance.now();
 
@@ -78,22 +54,39 @@ export default function StudioSection() {
             );
 
             if (progress < 1) {
-              requestAnimationFrame(animate);
+              animFrame = requestAnimationFrame(animate);
             }
           };
 
-          requestAnimationFrame(animate);
+          animFrame = requestAnimationFrame(animate);
+        } else {
+          // Reset to 0 when leaving viewport so it re-animates on re-entry
+          setMetrics((prevMetrics) =>
+            prevMetrics.map((m) => ({ ...m, current: 0 }))
+          );
         }
       },
-      { threshold: 0.25 }
+      { threshold: 0.2 }
     );
 
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
     }
 
-    return () => observer.disconnect();
-  }, [hasAnimated]);
+    return () => {
+      observer.disconnect();
+      if (animFrame) cancelAnimationFrame(animFrame);
+    };
+  }, []);
+
+  // Fan transformation offsets for 5 emerging thumbnails
+  const fanOffsets = [
+    { x: -52, y: -50, rot: -14, delay: '0ms' },
+    { x: -26, y: -62, rot: -7, delay: '40ms' },
+    { x: 0, y: -68, rot: 0, delay: '80ms' },
+    { x: 26, y: -62, rot: 7, delay: '120ms' },
+    { x: 52, y: -50, rot: 14, delay: '160ms' },
+  ];
 
   return (
     <section
@@ -103,11 +96,15 @@ export default function StudioSection() {
     >
       {/* Top Editorial Story Grid */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-8">
-        {/* Left Heading - Large and sitting slightly lower vertically */}
+        {/* Left Heading - First Word 100% Opacity & Hover Opacity Interaction */}
         <div className="md:col-span-5 md:pt-20">
-          <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light text-black tracking-tight leading-[1.06]">
-            The Studio Story & Philosophy
-          </h2>
+          <InteractiveHeading
+            as="h2"
+            firstWord="The"
+            middleText="Studio Story & Philosophy"
+            isLight={true}
+            className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light text-black tracking-tight leading-[1.06]"
+          />
         </div>
 
         {/* Right Long Editorial Text */}
@@ -124,26 +121,67 @@ export default function StudioSection() {
         </div>
       </div>
 
-      {/* Metrics Section - White cards with thin black borders */}
+      {/* Metrics Section - White cards with subtle hover lift & 5 emerging artwork thumbnails */}
       <div className="max-w-7xl mx-auto w-full pt-12 border-t border-black/15">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-          {metrics.map((m) => (
-            <div
-              key={m.id}
-              className="bg-white border border-black/15 p-6 sm:p-8 rounded-2xl flex flex-col justify-between space-y-4 hover:border-black/30 transition-colors shadow-sm"
-            >
-              <div className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-light text-black tracking-tight">
-                {m.prefix}
-                {m.current}
-                {m.suffix}
+          {metrics.map((m) => {
+            const isHovered = hoveredMetricId === m.id;
+
+            return (
+              <div
+                key={m.id}
+                onMouseEnter={() => setHoveredMetricId(m.id)}
+                onMouseLeave={() => setHoveredMetricId(null)}
+                className="relative group transition-all duration-300 ease-out"
+              >
+                {/* 5 Comic artwork thumbnails emerging sequentially from behind metric card on hover */}
+                {m.thumbImgs.map((imgSrc, imgIdx) => {
+                  const offset = fanOffsets[imgIdx];
+
+                  return (
+                    <div
+                      key={imgIdx}
+                      className="absolute top-0 left-1/2 -ml-6 w-12 h-16 rounded border border-black/20 overflow-hidden shadow-xl pointer-events-none z-0"
+                      style={{
+                        transform: isHovered
+                          ? `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${offset.rot}deg)`
+                          : 'translate3d(0, 0, 0) rotate(0deg)',
+                        opacity: isHovered ? 0.95 : 0,
+                        transition: `transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${offset.delay}, opacity 0.3s ease ${offset.delay}`,
+                      }}
+                    >
+                      <img
+                        src={imgSrc}
+                        alt=""
+                        className="w-full h-full object-cover filter contrast-110"
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Metric Card */}
+                <div
+                  className="relative z-10 bg-white border border-black/15 p-6 sm:p-8 rounded-2xl flex flex-col justify-between space-y-4 transition-all duration-300 shadow-sm"
+                  style={{
+                    transform: isHovered ? 'translate3d(0, -3px, 0)' : 'translate3d(0, 0, 0)',
+                    borderColor: isHovered ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)',
+                  }}
+                >
+                  <div className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-light text-black tracking-tight">
+                    {m.prefix}
+                    {m.current}
+                    {m.suffix}
+                  </div>
+                  <div className="font-inter text-xs sm:text-sm text-[#55555d] font-normal">
+                    {m.label}
+                  </div>
+                </div>
               </div>
-              <div className="font-inter text-xs sm:text-sm text-[#55555d] font-normal">
-                {m.label}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
+

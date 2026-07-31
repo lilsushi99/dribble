@@ -1,4 +1,6 @@
+import { useEffect, useState, useRef } from 'react';
 import heroNebulaImg from '../assets/images/hero_nebula_bg_1785513124347.jpg';
+import InteractiveHeading from './InteractiveHeading';
 
 interface HeroSectionProps {
   onOpenBookCall: () => void;
@@ -6,6 +8,26 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSectionProps) {
+  const [isIlluminated, setIsIlluminated] = useState(false);
+  const headingRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIlluminated(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (headingRef.current) {
+      observer.observe(headingRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section
       id="section-home"
@@ -25,12 +47,19 @@ export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSect
 
       {/* Hero Main Content */}
       <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center space-y-8 sm:space-y-10 py-12">
-        {/* Main Heading with inline accent word #E6A800 */}
-        <h1 className="font-outfit text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#f3f3f3] tracking-tight leading-[1.08] max-w-3xl">
-          Comic  <span className="text-[#E6A800]">Book</span> Artists.
-        </h1>
+        {/* Main Heading with First Word 100% & Hover Opacity Interaction */}
+        <div ref={headingRef}>
+          <InteractiveHeading
+            as="h1"
+            firstWord="Comic"
+            yellowText="Book"
+            tailText="Artists."
+            isIlluminated={isIlluminated}
+            className="font-outfit text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#f3f3f3] tracking-tight leading-[1.08] max-w-3xl"
+          />
+        </div>
 
-        {/* Sub Heading (Inter Font, warm light gray) */}
+        {/* Sub Heading (Inter Font, warm light gray - Static as specified) */}
         <p className="font-inter text-base sm:text-lg md:text-xl text-[#9a9a9e] font-normal leading-relaxed max-w-2xl text-center">
           An independent creative studio engineering brand identities, interactive architecture, and physical motion design with uncompromising editorial craft.
         </p>
@@ -42,7 +71,7 @@ export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSect
             onClick={onOpenBookCall}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-8 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
           >
-            <span>Chat With Us</span>
+            <span>Book a call</span>
             <svg
               className="w-4 h-4"
               fill="none"
@@ -75,3 +104,4 @@ export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSect
     </section>
   );
 }
+

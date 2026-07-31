@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import ComicSection from '../components/ComicSection';
+import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
+import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
+import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
 
 interface StudioPageProps {
   onOpenBookCall: () => void;
@@ -13,24 +16,43 @@ interface Metric {
   suffix: string;
   prefix?: string;
   current: number;
+  thumbImg?: string;
 }
 
 export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [isHeadingIlluminated, setIsHeadingIlluminated] = useState(false);
+  const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
+
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const metricsRef = useRef<HTMLDivElement | null>(null);
 
   const initialMetrics: Metric[] = [
-    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0 },
-    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0 },
-    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0 },
-    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0 },
-    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0 },
+    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImg: comic1 },
+    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImg: comic2 },
+    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImg: comic3 },
+    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImg: comic1 },
+    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImg: comic2 },
   ];
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
 
+  // Intersection observer for white text illumination reveal
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsHeadingIlluminated(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (headingRef.current) {
+      observer.observe(headingRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   // Counting numbers animation when metrics section enters viewport
@@ -74,10 +96,31 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
 
   return (
     <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-28 bg-[#050505] text-[#f3f3f3]">
-      {/* Editorial Header (No Tag) */}
+      {/* Editorial Header (White text brightness reveal, yellow text static) */}
       <div className="space-y-6 max-w-4xl pt-8">
-        <h1 className="font-outfit text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.06] text-white">
-          Engineering <span className="text-[#E6A800]">digital monuments</span> with architectural discipline.
+        <h1
+          ref={headingRef}
+          className="font-outfit text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.06] text-white"
+        >
+          <span
+            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
+            style={{
+              opacity: isHeadingIlluminated ? 1 : 0.35,
+              filter: isHeadingIlluminated ? 'brightness(1)' : 'brightness(0.35)',
+            }}
+          >
+            Engineering&nbsp;
+          </span>
+          <span className="text-[#E6A800]">digital monuments</span>
+          <span
+            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
+            style={{
+              opacity: isHeadingIlluminated ? 1 : 0.35,
+              filter: isHeadingIlluminated ? 'brightness(1)' : 'brightness(0.35)',
+            }}
+          >
+            &nbsp;with architectural discipline.
+          </span>
         </h1>
         <p className="font-inter text-lg sm:text-xl text-[#9a9a9e] font-normal leading-relaxed">
           KINETIC operates as an independent design laboratory bridging physical motion architecture, editorial visual identity, and high-performance digital systems.
@@ -145,21 +188,54 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
           Quantifiable Impact
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-          {metrics.map((m) => (
-            <div
-              key={m.id}
-              className="bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 rounded-2xl flex flex-col justify-between space-y-4 hover:border-white/20 transition-colors"
-            >
-              <div className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-light text-white tracking-tight">
-                {m.prefix}
-                {m.current}
-                {m.suffix}
+          {metrics.map((m) => {
+            const isHovered = hoveredMetricId === m.id;
+
+            return (
+              <div
+                key={m.id}
+                onMouseEnter={() => setHoveredMetricId(m.id)}
+                onMouseLeave={() => setHoveredMetricId(null)}
+                className="relative group transition-all duration-300 ease-out"
+              >
+                {/* Emerging artwork thumbnail on hover */}
+                {m.thumbImg && (
+                  <div
+                    className="absolute -top-3 right-3 w-12 h-16 rounded border border-white/20 overflow-hidden shadow-md transition-all duration-300 pointer-events-none z-0"
+                    style={{
+                      transform: isHovered
+                        ? 'translate3d(6px, -12px, 0) rotate(4deg)'
+                        : 'translate3d(0, 0, 0) rotate(0deg)',
+                      opacity: isHovered ? 0.85 : 0,
+                    }}
+                  >
+                    <img
+                      src={m.thumbImg}
+                      alt=""
+                      className="w-full h-full object-cover filter grayscale contrast-125"
+                    />
+                  </div>
+                )}
+
+                <div
+                  className="relative z-10 bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 rounded-2xl flex flex-col justify-between space-y-4 transition-all duration-300"
+                  style={{
+                    transform: isHovered ? 'translate3d(0, -3px, 0)' : 'translate3d(0, 0, 0)',
+                    borderColor: isHovered ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <div className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-light text-white tracking-tight">
+                    {m.prefix}
+                    {m.current}
+                    {m.suffix}
+                  </div>
+                  <div className="font-inter text-xs sm:text-sm text-[#9a9a9e] font-normal">
+                    {m.label}
+                  </div>
+                </div>
               </div>
-              <div className="font-inter text-xs sm:text-sm text-[#9a9a9e] font-normal">
-                {m.label}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

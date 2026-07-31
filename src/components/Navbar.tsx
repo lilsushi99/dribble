@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import kineticLogo from '../assets/images/kinetic_logo.svg';
 
 interface NavbarProps {
@@ -9,6 +9,46 @@ interface NavbarProps {
 
 export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCall }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isNavHovered, setIsNavHovered] = useState(false);
+  const [isLightSection, setIsLightSection] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Intersection Observer to detect white Studio Story section for logo color swap (White -> Black Logo)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsLightSection(true);
+          } else {
+            setIsLightSection(false);
+          }
+        });
+      },
+      { rootMargin: '-10% 0px -70% 0px', threshold: 0.1 }
+    );
+
+    const studioFullElem = document.getElementById('section-studio-full');
+    if (studioFullElem) {
+      observer.observe(studioFullElem);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const navItems = [
     { id: 'home', label: 'Home' },
@@ -25,10 +65,13 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
     }
   };
 
+  // Compress when scrolled down, expand back smoothly on hover
+  const isCompressed = isScrolled && !isNavHovered;
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 px-6 sm:px-12 py-6 transition-all duration-300 pointer-events-none">
+    <header className="fixed top-0 left-0 w-full z-50 px-6 sm:px-12 py-6 transition-all duration-500 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between relative pointer-events-auto">
-        {/* Left: Studio Image Logo */}
+        {/* Left: Studio Image Logo (Swaps between White and Black Logo based on section background) */}
         <div className="flex-1 flex justify-start">
           <button
             onClick={() => handleNavClick('home')}
@@ -38,22 +81,40 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
             <img
               src={kineticLogo}
               alt="KINETIC Studio Logo"
-              className="h-6 sm:h-7 w-auto object-contain transition-opacity duration-300 group-hover:opacity-90"
+              className={`h-6 sm:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90 ${
+                isLightSection ? 'filter brightness-0' : 'filter brightness-100'
+              }`}
             />
           </button>
         </div>
 
-        {/* Center: Desktop Navigation Links horizontally centered */}
-        <nav className="hidden md:flex items-center justify-center bg-[#050505]/80 backdrop-blur-md px-7 py-2.5 rounded-full border border-white/10 shadow-2xl">
-          <div className="flex items-center gap-6 lg:gap-8">
+        {/* Center: Desktop Navigation Links horizontally centered - Collapses into compact pill on scroll, expands on hover */}
+        <nav
+          onMouseEnter={() => setIsNavHovered(true)}
+          onMouseLeave={() => setIsNavHovered(false)}
+          className={`hidden md:flex items-center justify-center bg-[#050505]/85 backdrop-blur-md border border-white/10 shadow-2xl transition-all duration-500 ease-out ${
+            isCompressed
+              ? 'px-4 py-1.5 rounded-full scale-90 border-white/20 bg-black/90'
+              : 'px-7 py-2.5 rounded-full scale-100'
+          }`}
+        >
+          <div
+            className={`flex items-center transition-all duration-500 ease-out ${
+              isCompressed ? 'gap-1.5 lg:gap-2' : 'gap-6 lg:gap-8'
+            }`}
+          >
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`font-inter text-xs lg:text-sm tracking-wide transition-colors duration-200 cursor-pointer ${
-                  currentRoute === item.id
-                    ? 'text-white font-medium'
-                    : 'text-[#9a9a9e] hover:text-white'
+                className={`font-inter tracking-wide transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                  isCompressed
+                    ? currentRoute === item.id
+                      ? 'text-white text-xs font-semibold px-2 py-0.5 rounded-full bg-white/10'
+                      : 'text-[#9a9a9e] text-[11px] hover:text-white px-1'
+                    : currentRoute === item.id
+                    ? 'text-white text-xs lg:text-sm font-medium'
+                    : 'text-[#9a9a9e] text-xs lg:text-sm hover:text-white'
                 }`}
               >
                 {item.label}
@@ -68,7 +129,7 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
             onClick={onOpenBookCall}
             className="hidden sm:inline-flex items-center gap-2 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-5 py-2 text-xs font-medium tracking-wide transition-all duration-300 cursor-pointer active:scale-95"
           >
-            <span>Chat With Us</span>
+            <span>Book a call</span>
             <svg
               className="w-3.5 h-3.5"
               fill="none"
@@ -121,7 +182,7 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
             }}
             className="w-full inline-flex items-center justify-center gap-2 bg-[#0097FF] text-white rounded-full py-3 text-xs font-medium cursor-pointer"
           >
-            <span>Chat With Us</span>
+            <span>Book a call</span>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
             </svg>
@@ -131,3 +192,4 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
     </header>
   );
 }
+
