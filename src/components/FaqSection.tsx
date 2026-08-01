@@ -68,7 +68,7 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
     },
     {
       id: 'faq-2',
-      question: 'How does KINETIC structure project deliverables and source code?',
+      question: 'How does Comic Art Studio structure project deliverables and source code?',
       answer:
         'All commissions include fully documented, production-ready code repositories, bespoke typography licenses, physical asset guidelines, and componentized design tokens. You retain 100% intellectual property ownership.',
     },

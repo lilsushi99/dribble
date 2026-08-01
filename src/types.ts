@@ -19,3 +19,14 @@ export interface MangaPanel {
   widthRatio: number;
   heightRatio: number;
 }
+
+declare global {
+  interface Window {
+    Tawk_API?: {
+      toggle?: () => void;
+      maximize?: () => void;
+      minimize?: () => void;
+      showWidget?: () => void;
+    };
+  }
+}

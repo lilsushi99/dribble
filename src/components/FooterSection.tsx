@@ -33,17 +33,17 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
           <button
             onClick={() => onNavigate('home')}
             className="flex items-center cursor-pointer text-left focus:outline-none"
-            aria-label="KINETIC Studio Home"
+            aria-label="Comic Art Studio Home"
           >
             <img
               src={kineticLogo}
-              alt="KINETIC Studio Logo"
+              alt="Comic Art Studio Logo"
               className="h-6 sm:h-7 w-auto object-contain"
             />
           </button>
 
           <p className="font-inter text-sm text-[#9a9a9e] max-w-sm leading-relaxed">
-            An independent creative studio engineering brand architecture, bespoke digital monuments, and physical motion design with uncompromising editorial craft.
+            Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga pages, and creative collaboration.
           </p>
         </div>
 
@@ -82,6 +82,14 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
                   </a>
                 </li>
               ))}
+              <li className="pt-2 border-t border-white/5">
+                <button
+                  onClick={() => onNavigate('admin')}
+                  className="text-[#55555d] hover:text-[#9a9a9e] text-[11px] font-normal transition-colors cursor-pointer text-left focus:outline-none"
+                >
+                  Admin
+                </button>
+              </li>
             </ul>
           </div>
         </div>
@@ -89,9 +97,9 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
 
       {/* Bottom Legal & Attribution */}
       <div className="max-w-7xl mx-auto w-full pt-12 mt-12 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 font-inter text-xs text-[#9a9a9e]">
-        <div>© {new Date().getFullYear()} KINETIC Studio Ltd. All rights reserved.</div>
+        <div>© {new Date().getFullYear()} Comic Art Studio. All rights reserved.</div>
         <div>
-          Designed by <span className="text-white font-medium">KINETIC Atelier</span>
+          Designed by <span className="text-white font-medium">Comic Art Studio</span>
         </div>
       </div>
     </footer>

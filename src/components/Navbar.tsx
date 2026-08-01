@@ -76,11 +76,11 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
           <button
             onClick={() => handleNavClick('home')}
             className="group text-left flex items-center cursor-pointer focus:outline-none"
-            aria-label="KINETIC Studio Home"
+            aria-label="Comic Art Studio Home"
           >
             <img
               src={kineticLogo}
-              alt="KINETIC Studio Logo"
+              alt="Comic Art Studio Logo"
               className={`h-6 sm:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90 ${
                 isLightSection ? 'filter brightness-0' : 'filter brightness-100'
               }`}

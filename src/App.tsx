@@ -79,6 +79,7 @@ export default function App() {
     else if (route === 'projects') navigate('/projects');
     else if (route === 'blog') navigate('/blog');
     else if (route === 'contact') navigate('/contact');
+    else if (route === 'admin') navigate('/admin');
   };
 
   return (
@@ -86,16 +87,6 @@ export default function App() {
       {/* Custom Cursor & Liquid Membrane Effects */}
       <CustomCursor />
       <LiquidMembrane />
-
-      {/* Floating Admin Trigger */}
-      <button
-        onClick={() => navigate('/admin')}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 backdrop-blur-md border border-blue-400/40 transition-all hover:scale-105 active:scale-95 cursor-pointer group"
-        title="Open KINETIC Admin Engine"
-      >
-        <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-        <span>ADMIN PANEL</span>
-      </button>
 
       {/* Navbar with centered navigation links */}
       <Navbar

@@ -28,15 +28,15 @@ export interface SettingsState {
 }
 
 const defaultSettings: SettingsState = {
-  site_name: 'KINETIC',
-  company_name: 'KINETIC Studio Ltd.',
-  email: 'hello@kinetic-studio.com',
+  site_name: 'Comic Art Studio',
+  company_name: 'Comic Art Studio',
+  email: 'hello@comicartstudio.com',
   phone: '+1 (800) 555-0199',
-  address: '100 Architectural Way, Studio District, CA 90210',
-  copyright_text: '© 2026 KINETIC Studio Ltd. All rights reserved.',
-  footer_info: 'An independent creative studio engineering brand architecture, bespoke digital monuments, and physical motion design.',
-  designer_credit: 'KINETIC Atelier',
-  designer_url: 'https://kinetic-studio.com',
+  address: '100 Studio Way, Creative District, CA 90210',
+  copyright_text: '© 2026 Comic Art Studio. All rights reserved.',
+  footer_info: 'An independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga pages, and visual arts.',
+  designer_credit: 'Comic Art Studio',
+  designer_url: 'https://comicartstudio.com',
   white_logo: '/uploads/logos/kinetic-white.svg',
   black_logo: '/uploads/logos/kinetic-black.svg',
   favicon: '/favicon.ico',

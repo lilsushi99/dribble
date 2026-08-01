@@ -20,12 +20,41 @@ export default function StudioSection() {
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
+  const [studioConfig, setStudioConfig] = useState<{
+    heading: string;
+    story: string;
+    buttonText: string;
+    buttonUrl: string;
+  }>({
+    heading: 'Our Story',
+    story: 'Founded in 2020, Comic Art Studio is a dedicated creative laboratory specializing in comic books, manga, visual storytelling, concept art, and illustration. Driven by a passion for artistic excellence and visual narrative, our studio merges traditional pen-and-ink craftsmanship with modern digital design to bring extraordinary characters and immersive worlds to life for creators and publishers worldwide.',
+    buttonText: 'READ MORE',
+    buttonUrl: '/studio',
+  });
+
+  useEffect(() => {
+    fetch('/api/v1/studio')
+      .then((res) => res.json())
+      .then((resData) => {
+        const data = resData.data || resData;
+        if (data && data.story_content) {
+          setStudioConfig({
+            heading: 'Our Story',
+            story: data.story_content,
+            buttonText: data.cta_button_text || 'READ MORE',
+            buttonUrl: data.cta_button_url || '/studio',
+          });
+        }
+      })
+      .catch((e) => console.warn('Using default studio section data', e));
+  }, []);
+
   const initialMetrics: Metric[] = [
     { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, p1Img, p2Img] },
     { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImgs: [comic2, comic3, p1Img, p2Img, comic1] },
     { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImgs: [comic3, p1Img, p2Img, comic1, comic2] },
     { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImgs: [p1Img, p2Img, comic1, comic2, comic3] },
-    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImgs: [p2Img, comic1, comic2, comic3, p1Img] },
+    { id: 'm5', label: 'Client Capital Raised', target: 1, prefix: '$', suffix: 'M', current: 0, thumbImgs: [p2Img, comic1, comic2, comic3, p1Img] },
   ];
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
@@ -175,28 +204,44 @@ export default function StudioSection() {
     >
       {/* Top Editorial Story Grid */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-8">
-        {/* Left Heading - First Word Pure Black (#111115), Remaining words reduced opacity (#55555d) - Static */}
+        {/* Left Heading */}
         <div className="md:col-span-5 md:pt-20">
-          <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06]">
-            <span className="text-[#111115] font-normal">The&nbsp;</span>
-            <span className="text-[#55555d] font-light">Studio Story & Philosophy</span>
+          <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06] text-[#111115]">
+            {studioConfig.heading}
           </h2>
         </div>
 
-        {/* Right Long Editorial Text - Scroll progress opacity reveal, pure black P1 & grey-black P2/P3 */}
+        {/* Right Long Editorial Text & Read More Button */}
         <div
           ref={paragraphsContainerRef}
           className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg leading-relaxed transition-opacity duration-75"
         >
           <p className="text-[#111115] font-normal text-lg sm:text-xl leading-relaxed">
-            Founded in 2018, KINETIC operates as a disciplined design laboratory at the intersection of brand architecture, physical motion systems, and digital craftsmanship.
+            {studioConfig.story}
           </p>
-          <p className="text-[#55555d]">
-            With over eight years of rigorous practice spanning Tokyo, London, and New York, our mission is singular: to eliminate digital noise and engineer lasting visual monuments for visionary founders and global cultural institutions.
-          </p>
-          <p className="text-[#55555d]">
-            Our approach rejects generic SaaS conventions, pre-built template trends, and artificial decoration. We treat digital spaces with the same architectural gravity, material honesty, and physical inertia as stone, steel, and light.
-          </p>
+
+          {/* Read More Button with 60° Arrow Icon */}
+          <div className="pt-2">
+            <a
+              href={studioConfig.buttonUrl}
+              className="inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-[#111115] hover:bg-black text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 hover:scale-105 group shadow-md"
+            >
+              <span>{studioConfig.buttonText}</span>
+              <svg
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                style={{ transform: 'rotate(15deg)' }}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
 

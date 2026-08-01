@@ -32,7 +32,7 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
     { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImgs: [comic2, comic3, comic1, comic2, comic3] },
     { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImgs: [comic3, comic1, comic2, comic3, comic1] },
     { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImgs: [comic1, comic2, comic3, comic1, comic2] },
-    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImgs: [comic2, comic3, comic1, comic2, comic3] },
+    { id: 'm5', label: 'Client Capital Raised', target: 1, prefix: '$', suffix: 'M', current: 0, thumbImgs: [comic2, comic3, comic1, comic2, comic3] },
   ];
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
@@ -139,34 +139,17 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
 
   return (
     <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-28 bg-[#050505] text-[#f3f3f3]">
-      {/* Editorial Header (White text brightness reveal, yellow text static) */}
+      {/* Editorial Header */}
       <div className="space-y-6 max-w-4xl pt-8">
         <h1
           ref={headingRef}
           className="font-outfit text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.06] text-white"
         >
-          <span
-            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
-            style={{
-              opacity: isHeadingIlluminated ? 1 : 0.35,
-              filter: isHeadingIlluminated ? 'brightness(1)' : 'brightness(0.35)',
-            }}
-          >
-            Engineering&nbsp;
-          </span>
-          <span className="text-[#E6A800]">digital monuments</span>
-          <span
-            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
-            style={{
-              opacity: isHeadingIlluminated ? 1 : 0.35,
-              filter: isHeadingIlluminated ? 'brightness(1)' : 'brightness(0.35)',
-            }}
-          >
-            &nbsp;with architectural discipline.
-          </span>
+          <span className="text-white">Our&nbsp;</span>
+          <span className="text-[#E6A800]">Story</span>
         </h1>
         <p className="font-inter text-lg sm:text-xl text-[#9a9a9e] font-normal leading-relaxed">
-          KINETIC operates as an independent design laboratory bridging physical motion architecture, editorial visual identity, and high-performance digital systems.
+          Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga, and collaborative visual arts.
         </p>
       </div>
 
@@ -179,16 +162,16 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
         </div>
         <div className="md:col-span-8 space-y-6 font-inter text-base sm:text-lg text-[#9a9a9e] leading-relaxed">
           <p className="text-white font-medium text-lg sm:text-xl leading-relaxed">
-            Founded in 2018, KINETIC emerged from a conviction that modern digital interfaces had succumbed to disposable SaaS visual formulas, homogenized component libraries, and visual noise.
+            Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.
           </p>
           <p>
-            With over eight years of international practice spanning Tokyo, London, and New York, our partners approach digital architecture with the same material gravity, tactile inertia, and editorial permanence as stone, steel, and light.
+            Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.
           </p>
           <p>
-            We collaborate with visionary founders, private equity firms, aerospace labs, and cultural institutions who reject transient design trends in pursuit of undeniable visual authority.
+            We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.
           </p>
           <p>
-            Every project begins with fundamental brand architecture before progressing through physical prototype sketching, manga storyboard mapping, and custom shader engineering.
+            Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.
           </p>
         </div>
       </div>

@@ -18,13 +18,15 @@ export interface Project {
   id: number;
   slug: string;
   title: string;
-  client: string;
+  client?: string;
   year: string;
   grid_span?: string;
   aspect_ratio?: string;
-  description?: string;
+  description: string;
   full_case_study?: string;
-  image_url?: string;
+  image_url: string;
+  tools_used?: string[];
+  gallery_images?: string[];
   is_featured: boolean;
   is_published: boolean;
   sort_order: number;

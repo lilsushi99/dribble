@@ -166,18 +166,18 @@ export default function ComicSection() {
       id="section-studio"
       className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-center overflow-hidden"
     >
-      {/* Section Header with First Word Immediate & Typewriter Animation on Scroll */}
+      {/* Section Header */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
         <h2 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight">
           <span className="inline-block text-white font-normal">
-            Sequential&nbsp;
+            Comic&nbsp;
           </span>
-          <span className="inline-block text-white/90 font-light">
-            {hasTypedRef.current ? remainingHeadingText.slice(0, typedLength) : ''}
+          <span className="inline-block text-[#E6A800] font-light">
+            Panels
           </span>
         </h2>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-2xl mx-auto font-normal leading-relaxed">
-          Dynamic visual narratives rendered across independent manga reels.
+          Immerse yourself in cinematic storytelling, expressive comic panels, dynamic manga pages, and sequential artwork crafted with emotion and visual depth.
         </p>
       </div>
 

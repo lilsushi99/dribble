@@ -1,82 +1,68 @@
 import { isDbConnected, query } from '../config/database';
 import { Project } from '../types';
 
-let memoryProjects: Project[] = [
-  {
-    id: 1,
-    slug: 'vanguard-orbital',
-    title: 'Vanguard Orbital HQ',
-    client: 'Vanguard Aerospace',
-    year: '2026',
-    grid_span: 'col-span-12 md:col-span-8',
-    aspect_ratio: 'aspect-[16/10]',
-    description: 'Kinetic spatial architecture and command center interface system.',
-    full_case_study: 'A complete architectural visual identity and real-time telemetry dashboard.',
-    image_url: '/assets/images/project_artwork_1_1785513185877.jpg',
-    is_featured: true,
-    is_published: true,
-    sort_order: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    slug: 'kuroda-museum',
-    title: 'Kuroda Museum Pavilion',
-    client: 'Kuroda Foundation Tokyo',
-    year: '2025',
-    grid_span: 'col-span-12 md:col-span-4',
-    aspect_ratio: 'aspect-[3/4]',
-    description: 'Monolithic digital gallery and interactive archive exhibit.',
-    full_case_study: 'Minimalist physical pavilion integrated with high-frequency e-paper display walls.',
-    image_url: '/assets/images/project_artwork_2_1785513204720.jpg',
-    is_featured: true,
-    is_published: true,
-    sort_order: 2,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+let memoryProjects: Project[] = [];
 
 export class ProjectRepository {
   async findAll(): Promise<Project[]> {
     if (isDbConnected()) {
-      const sql = `SELECT * FROM projects WHERE is_published = 1 ORDER BY sort_order ASC, id DESC`;
-      return query<Project[]>(sql);
+      const sql = `SELECT * FROM projects ORDER BY sort_order ASC, id DESC`;
+      const rows = await query<any[]>(sql);
+      return rows.map((r) => ({
+        ...r,
+        tools_used: typeof r.tools_used === 'string' ? JSON.parse(r.tools_used || '[]') : r.tools_used || [],
+        gallery_images: typeof r.gallery_images === 'string' ? JSON.parse(r.gallery_images || '[]') : r.gallery_images || [],
+        is_featured: Boolean(r.is_featured),
+        is_published: Boolean(r.is_published),
+      }));
     }
     return memoryProjects;
   }
 
   async findPublished(): Promise<Project[]> {
-    return this.findAll();
+    const all = await this.findAll();
+    return all.filter((p) => p.is_published);
   }
 
   async findBySlug(slug: string): Promise<Project | null> {
     if (isDbConnected()) {
       const sql = `SELECT * FROM projects WHERE slug = ? LIMIT 1`;
-      const rows = await query<Project[]>(sql, [slug]);
-      return rows.length ? rows[0] : null;
+      const rows = await query<any[]>(sql, [slug]);
+      if (!rows.length) return null;
+      const r = rows[0];
+      return {
+        ...r,
+        tools_used: typeof r.tools_used === 'string' ? JSON.parse(r.tools_used || '[]') : r.tools_used || [],
+        gallery_images: typeof r.gallery_images === 'string' ? JSON.parse(r.gallery_images || '[]') : r.gallery_images || [],
+        is_featured: Boolean(r.is_featured),
+        is_published: Boolean(r.is_published),
+      };
     }
     return memoryProjects.find((p) => p.slug === slug) || null;
   }
 
   async create(proj: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
     const now = new Date().toISOString();
+    const toolsUsedJson = JSON.stringify(proj.tools_used || []);
+    const galleryImagesJson = JSON.stringify(proj.gallery_images || []);
+
     if (isDbConnected()) {
       const sql = `
-        INSERT INTO projects (slug, title, client, year, grid_span, aspect_ratio, description, full_case_study, image_url, is_featured, is_published, sort_order, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO projects (slug, title, client, year, grid_span, aspect_ratio, description, full_case_study, image_url, tools_used, gallery_images, is_featured, is_published, sort_order, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `;
-      const res: any = await query(sql, [
+      await query(sql, [
         proj.slug,
         proj.title,
-        proj.client,
+        proj.client || '',
         proj.year,
         proj.grid_span || 'col-span-12 md:col-span-6',
         proj.aspect_ratio || 'aspect-[4/3]',
-        proj.description || null,
+        proj.description || '',
         proj.full_case_study || null,
-        proj.image_url || null,
+        proj.image_url || '',
+        toolsUsedJson,
+        galleryImagesJson,
         proj.is_featured ? 1 : 0,
         proj.is_published ? 1 : 0,
         proj.sort_order || 0,
@@ -89,6 +75,8 @@ export class ProjectRepository {
     const newProj: Project = {
       ...proj,
       id: memoryProjects.length + 1,
+      tools_used: proj.tools_used || [],
+      gallery_images: proj.gallery_images || [],
       created_at: now,
       updated_at: now,
     };
@@ -104,7 +92,13 @@ export class ProjectRepository {
       Object.entries(proj).forEach(([key, value]) => {
         if (key !== 'id') {
           fields.push(`${key} = ?`);
-          values.push(value);
+          if (key === 'tools_used' || key === 'gallery_images') {
+            values.push(JSON.stringify(value || []));
+          } else if (key === 'is_featured' || key === 'is_published') {
+            values.push(value ? 1 : 0);
+          } else {
+            values.push(value);
+          }
         }
       });
 
@@ -142,8 +136,16 @@ export class ProjectRepository {
   async findById(id: number): Promise<Project | null> {
     if (isDbConnected()) {
       const sql = `SELECT * FROM projects WHERE id = ? LIMIT 1`;
-      const rows = await query<Project[]>(sql, [id]);
-      return rows.length ? rows[0] : null;
+      const rows = await query<any[]>(sql, [id]);
+      if (!rows.length) return null;
+      const r = rows[0];
+      return {
+        ...r,
+        tools_used: typeof r.tools_used === 'string' ? JSON.parse(r.tools_used || '[]') : r.tools_used || [],
+        gallery_images: typeof r.gallery_images === 'string' ? JSON.parse(r.gallery_images || '[]') : r.gallery_images || [],
+        is_featured: Boolean(r.is_featured),
+        is_published: Boolean(r.is_published),
+      };
     }
     return memoryProjects.find((p) => p.id === id) || null;
   }

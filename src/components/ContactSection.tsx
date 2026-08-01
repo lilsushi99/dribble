@@ -108,10 +108,10 @@ export default function ContactSection() {
         <div className="md:col-span-7 bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 sm:p-12 flex flex-col justify-between shadow-2xl space-y-8">
           <div className="space-y-2">
             <h2 className="font-outfit text-3xl sm:text-5xl font-light text-[#f3f3f3] tracking-tight">
-              Initiate <span className="text-[#E6A800]">Commission Inquiry</span>
+              Contact <span className="text-[#E6A800]">Us Today</span>
             </h2>
             <p className="font-inter text-sm sm:text-base text-[#9a9a9e] leading-relaxed">
-              Complete the parameters below to schedule a private studio consultation.
+              Send us a message and receive a response in less than one hour.
             </p>
           </div>
 

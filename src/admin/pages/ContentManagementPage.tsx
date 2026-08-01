@@ -15,8 +15,8 @@ export const ContentManagementPage: React.FC<ContentManagementPageProps> = () =>
   const [activeSubModule, setActiveSubModule] = useState<CmsSubModule>('projects');
 
   const tabs: Array<{ id: CmsSubModule; label: string; icon: React.FC<{ className?: string }> }> = [
-    { id: 'projects', label: 'Projects & Portfolio', icon: FolderKanban },
-    { id: 'studio', label: 'Studio & Laboratory', icon: Sparkles },
+    { id: 'projects', label: 'Projects', icon: FolderKanban },
+    { id: 'studio', label: 'Studio', icon: Sparkles },
     { id: 'blog', label: 'Editorial Blog', icon: BookOpen },
     { id: 'faq', label: 'FAQ & Protocols', icon: HelpCircle },
   ];

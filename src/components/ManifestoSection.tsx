@@ -32,7 +32,7 @@ export default function ManifestoSection({ onOpenBookCall }: ManifestoSectionPro
           We construct timeless digital artifacts for an uncompromising era.
         </h2>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-2xl mx-auto font-normal leading-relaxed">
-          Operating as an elite design and engineering laboratory, KINETIC collaborates exclusively with founders and brands seeking monumental distinction.
+          Operating as an elite design and engineering laboratory, Comic Art Studio collaborates exclusively with founders and brands seeking monumental distinction.
         </p>
       </div>
 

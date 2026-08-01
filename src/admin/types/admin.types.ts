@@ -90,13 +90,15 @@ export interface ProjectCMSItem {
   id: number;
   slug: string;
   title: string;
-  client: string;
+  client?: string;
   year: string;
   grid_span?: string;
   aspect_ratio?: string;
-  description?: string;
+  description: string;
   full_case_study?: string;
-  image_url?: string;
+  image_url: string;
+  tools_used?: string[];
+  gallery_images?: string[];
   is_featured: boolean;
   is_published: boolean;
   sort_order?: number;
@@ -104,12 +106,41 @@ export interface ProjectCMSItem {
   updated_at?: string;
 }
 
+export interface StatCardItem {
+  id: string;
+  title: string;
+  value: string;
+  images: string[];
+}
+
+export interface ValueCardItem {
+  id: string;
+  title?: string;
+  description: string;
+}
+
 export interface StudioPageData {
   id?: number;
-  hero_title: string;
-  hero_subtitle: string;
-  philosophy_content: string;
-  metrics_json?: string;
+  // Section 1: Studio Introduction
+  intro_heading: string;
+  intro_subtitle: string;
+  // Section 2: Studio Story
+  story_heading: string;
+  story_content: string;
+  // Section 3: Statistics Cards
+  stats_cards: StatCardItem[];
+  // Section 4: Mission, Vision, Philosophy Cards
+  value_cards: ValueCardItem[];
+  // Section 5: Comic Panel Toggle
+  show_comic_panel: boolean;
+  // Section 6: Counter Component Toggle
+  show_counter: boolean;
+  // Section 7: Final CTA
+  cta_heading: string;
+  cta_description: string;
+  cta_button_text: string;
+  cta_button_url: string;
+  show_cta: boolean;
   updated_at?: string;
 }
 

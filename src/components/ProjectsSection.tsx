@@ -135,18 +135,17 @@ export default function ProjectsSection({
       id="section-projects"
       className="relative w-full min-h-screen py-24 px-6 sm:px-12 bg-[#050505] flex flex-col justify-between overflow-hidden"
     >
-      {/* Section Header with First Word 100% Opacity & Hover Interaction */}
+      {/* Section Header */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
         <InteractiveHeading
           as="h2"
-          firstWord="Selected"
-          middleText="works pinned in"
-          yellowText="architectural unity."
+          firstWord="Take a Look at"
+          yellowText="Our Projects"
           isIlluminated={scrollProgress > 0.1}
           className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
         />
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-xl mx-auto font-normal leading-relaxed">
-          Hover over any project artwork to elevate its visual detail and mute surrounding elements.
+          Discover Comic Art Studio's portfolio of published comic books, custom illustrations, manga series, graphic novels, and visual storytelling commissions.
         </p>
       </div>
 

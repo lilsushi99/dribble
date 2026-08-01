@@ -64,13 +64,13 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
 
   return (
     <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3]">
-      {/* Page Title (No Tag) */}
+      {/* Page Title */}
       <div className="space-y-4 max-w-3xl pt-8">
         <h1 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight leading-[1.08]">
-          Critical Essays on <span className="text-[#E6A800]">Digital Permanence</span>
+          Our Archive of <span className="text-[#E6A800]">Stories & Thoughts</span>
         </h1>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] font-normal leading-relaxed">
-          Reflections on interactive architecture, physical motion systems, typography, and editorial craft published by KINETIC partners.
+          Insights, behind-the-scenes perspectives, comic development breakdowns, illustration processes, and visual storytelling essays published by Comic Art Studio.
         </p>
       </div>
 
@@ -111,7 +111,7 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
             </div>
 
             <button
-              onClick={() => window.open('https://substack.com', '_blank')}
+              onClick={() => { window.location.href = '/'; }}
               className="inline-flex items-center gap-2 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-5 py-2.5 text-xs font-medium transition-all duration-300 cursor-pointer active:scale-95"
             >
               <span>Read Article</span>
@@ -166,7 +166,7 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
               <div className="p-6 pt-0 border-t border-white/5 mt-4 flex items-center justify-between font-inter text-xs text-[#9a9a9e]">
                 <span>By {art.author}</span>
                 <button
-                  onClick={() => window.open('https://substack.com', '_blank')}
+                  onClick={() => { window.location.href = '/'; }}
                   className="inline-flex items-center gap-2 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-4 py-2 text-xs font-medium tracking-wide transition-all duration-300 cursor-pointer active:scale-95"
                 >
                   <span>Read Article</span>
@@ -183,7 +183,7 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
       {/* Journal Subscription CTA */}
       <div className="pt-16 pb-8 border-t border-white/10 text-center space-y-6 max-w-2xl mx-auto">
         <h2 className="font-outfit text-3xl sm:text-5xl font-light text-white tracking-tight">
-          Subscribe to <span className="text-[#E6A800]">KINETIC Monograph</span>
+          Subscribe to <span className="text-[#E6A800]">Comic Art Studio Journal</span>
         </h2>
         <p className="font-inter text-sm sm:text-base text-[#9a9a9e]">
           Quarterly dispatches on design theory, motion architecture, and studio research published on Substack.
