@@ -28,6 +28,10 @@ export class BlogRepository {
     return memoryBlogPosts;
   }
 
+  async findPublished(): Promise<BlogPost[]> {
+    return this.findAll();
+  }
+
   async findBySlug(slug: string): Promise<BlogPost | null> {
     if (isDbConnected()) {
       const sql = `SELECT * FROM blog_posts WHERE slug = ? LIMIT 1`;

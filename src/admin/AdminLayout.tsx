@@ -23,6 +23,7 @@ import { SeoPage } from './pages/SeoPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { UsersPage } from './pages/UsersPage';
 import { ActivityLogsPage } from './pages/ActivityLogsPage';
+import { InstallationGuidePage } from './pages/InstallationGuidePage';
 
 export interface AdminLayoutProps {
   onViewWebsite: () => void;
@@ -169,6 +170,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
     settings: 'System Infrastructure Settings',
     users: 'Users & Roles Management',
     'activity-logs': 'Audit Trail & Activity Logs',
+    'installation-guide': 'Hostinger Production Installation Guide',
   };
 
   return (
@@ -238,6 +240,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
             {activeTab === 'users' && <UsersPage />}
 
             {activeTab === 'activity-logs' && <ActivityLogsPage logs={activityLogs} />}
+
+            {activeTab === 'installation-guide' && <InstallationGuidePage />}
           </div>
         </main>
       </div>

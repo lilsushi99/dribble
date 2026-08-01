@@ -5,9 +5,18 @@ import InteractiveHeading from './InteractiveHeading';
 interface HeroSectionProps {
   onOpenBookCall: () => void;
   onViewProjects: () => void;
+  bgType?: 'image' | 'color';
+  bgImage?: string;
+  bgColor?: string;
 }
 
-export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSectionProps) {
+export default function HeroSection({
+  onOpenBookCall,
+  onViewProjects,
+  bgType = 'image',
+  bgImage,
+  bgColor = '#000000',
+}: HeroSectionProps) {
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,18 +41,21 @@ export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSect
     <section
       id="section-home"
       className="relative w-full h-screen min-h-[700px] flex flex-col justify-center items-center text-center px-6 sm:px-12 bg-[#050505] overflow-hidden"
+      style={{ backgroundColor: bgType === 'color' ? bgColor : '#050505' }}
     >
-      {/* Authentic Nebula Image Background - concentrated at edges, dark center */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <img
-          src={heroNebulaImg}
-          alt="Cosmic space nebula background"
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover object-center opacity-85 scale-105 transform-gpu"
-        />
-        {/* Subtle center vignetting to guarantee pristine text contrast */}
-        <div className="absolute inset-0 bg-radial from-transparent via-[#050505]/60 to-[#050505]/90" />
-      </div>
+      {/* Background Image / Color Mode */}
+      {bgType !== 'color' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <img
+            src={bgImage || heroNebulaImg}
+            alt="Cosmic space nebula background"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover object-center opacity-85 scale-105 transform-gpu"
+          />
+          {/* Subtle center vignetting to guarantee text contrast */}
+          <div className="absolute inset-0 bg-radial from-transparent via-[#050505]/60 to-[#050505]/90" />
+        </div>
+      )}
 
       {/* Hero Main Content */}
       <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center space-y-8 sm:space-y-10 py-12">
@@ -71,7 +83,7 @@ export default function HeroSection({ onOpenBookCall, onViewProjects }: HeroSect
             onClick={onOpenBookCall}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-8 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
           >
-            <span>Book a call</span>
+            <span>Chat with Us</span>
             <svg
               className="w-4 h-4"
               fill="none"

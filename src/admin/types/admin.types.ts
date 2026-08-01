@@ -22,10 +22,23 @@ export interface LayoutSection {
   primaryButtonLink?: string;
   secondaryButtonText?: string;
   secondaryButtonLink?: string;
-  bgStyle: 'dark' | 'darker' | 'accent' | 'glass';
-  spacing: 'compact' | 'default' | 'spacious';
-  animationEnabled: boolean;
+  bgStyle?: 'dark' | 'darker' | 'accent' | 'glass';
+  bgType?: string;
+  bgColor?: string;
+  bgImage?: string;
+  spacing?: 'compact' | 'default' | 'spacious';
+  animationEnabled?: boolean;
   imageUrl?: string;
+  marqueeData?: any;
+  comicPanels?: any;
+  projectsLimit?: number;
+  studioStoryContent?: string;
+  studioButtonText?: string;
+  studioButtonLink?: string;
+  metricsData?: any[];
+  faqs?: any[];
+  customSettings?: Record<string, any>;
+  [key: string]: any;
 }
 
 export interface MediaFile {

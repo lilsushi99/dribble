@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 
 interface InteractiveHeadingProps {
   firstWord: string;
@@ -21,37 +21,27 @@ export default function InteractiveHeading({
   isLight = false,
   isIlluminated = true,
 }: InteractiveHeadingProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const Component = as;
 
   // Base opacity/brightness style for scroll entrance reveal
   const scrollStyle = {
     opacity: isIlluminated ? 1 : 0.35,
     filter: isIlluminated ? 'brightness(1)' : 'brightness(0.35)',
+    transition: 'opacity 1s ease-out, filter 1s ease-out',
   };
 
-  // Color & opacity classes
-  const firstWordColor = isLight ? 'text-black' : 'text-white';
-  const remainingColor = isLight
-    ? isHovered ? 'text-black opacity-100' : 'text-black/60 opacity-60'
-    : isHovered ? 'text-white opacity-100' : 'text-white/65 opacity-65';
+  const wordColor = isLight ? 'text-black' : 'text-white';
 
   return (
-    <Component
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`cursor-default ${className}`}
-      style={scrollStyle}
-    >
+    <Component className={`cursor-default ${className}`} style={scrollStyle}>
       {/* First Word - Always 100% Opacity */}
-      <span className={`inline-block font-normal ${firstWordColor} transition-colors duration-500`}>
+      <span className={`inline-block font-normal ${wordColor}`}>
         {firstWord}&nbsp;
       </span>
 
-      {/* Middle Text - 60-70% default, 100% on hover */}
+      {/* Middle Text */}
       {middleText && (
-        <span className={`inline-block transition-all duration-500 ease-out ${remainingColor}`}>
+        <span className={`inline-block ${wordColor}`}>
           {middleText}&nbsp;
         </span>
       )}
@@ -63,12 +53,13 @@ export default function InteractiveHeading({
         </span>
       )}
 
-      {/* Tail Text - 60-70% default, 100% on hover */}
+      {/* Tail Text */}
       {tailText && (
-        <span className={`inline-block transition-all duration-500 ease-out ${remainingColor}`}>
+        <span className={`inline-block ${wordColor}`}>
           &nbsp;{tailText}
         </span>
       )}
     </Component>
   );
 }
+

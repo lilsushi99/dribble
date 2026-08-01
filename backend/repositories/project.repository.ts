@@ -47,6 +47,10 @@ export class ProjectRepository {
     return memoryProjects;
   }
 
+  async findPublished(): Promise<Project[]> {
+    return this.findAll();
+  }
+
   async findBySlug(slug: string): Promise<Project | null> {
     if (isDbConnected()) {
       const sql = `SELECT * FROM projects WHERE slug = ? LIMIT 1`;

@@ -1,8 +1,35 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import designerSketchImg from '../assets/images/comic_panel_2_1785513156210.jpg';
 
 export default function ContactSection() {
   const [submitted, setSubmitted] = useState(false);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const parallaxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (sectionRef.current && parallaxRef.current) {
+            const rect = sectionRef.current.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const scrollProgress = (windowHeight - rect.top) / (windowHeight + rect.height);
+            const translateY = (scrollProgress - 0.5) * -18;
+            parallaxRef.current.style.transform = `translate3d(0, ${translateY.toFixed(2)}px, 0)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,10 +64,11 @@ export default function ContactSection() {
 
   return (
     <section
+      ref={sectionRef}
       id="section-contact-full"
-      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-between"
+      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-between overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch my-auto">
+      <div ref={parallaxRef} className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch my-auto will-change-transform transition-transform duration-75 ease-out">
         {/* Left Column: Artist Image Container matching Form Container height */}
         <div className="md:col-span-5 bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl space-y-6">
           <div className="relative flex-1 min-h-[320px] sm:min-h-[380px] w-full rounded-2xl overflow-hidden border border-white/10 bg-black group">

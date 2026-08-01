@@ -99,3 +99,29 @@
   z-index: 10;
 }
 
+/* GPU-accelerated Marquee Ribbons */
+@keyframes marquee-left {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left var(--marquee-speed, 35s) linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  animation: marquee-right var(--marquee-speed, 35s) linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+

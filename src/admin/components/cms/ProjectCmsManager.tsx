@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Textarea, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui';
+import { Card, Button, Input, Textarea, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, DeviceImageUpload } from '../ui';
 import { adminApi } from '../../services/adminApi';
 import { ProjectCMSItem } from '../../types/admin.types';
 import { FolderKanban, Plus, Edit2, Trash2, Check, X, Eye, ExternalLink, RefreshCw } from 'lucide-react';
@@ -35,7 +35,7 @@ export const ProjectCmsManager: React.FC = () => {
       year: new Date().getFullYear().toString(),
       description: '',
       full_case_study: '',
-      image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
+      image_url: '',
       grid_span: 'col-span-12 md:col-span-6',
       aspect_ratio: 'aspect-[4/3]',
       is_featured: true,
@@ -44,6 +44,7 @@ export const ProjectCmsManager: React.FC = () => {
     });
     setIsModalOpen(true);
   };
+
 
   const handleOpenEdit = (proj: ProjectCMSItem) => {
     setEditingProject({ ...proj });
@@ -234,15 +235,12 @@ export const ProjectCmsManager: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Cover Image URL</label>
-                <Input
-                  type="text"
-                  value={editingProject.image_url || ''}
-                  onChange={(e) => setEditingProject((prev) => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://images.unsplash.com/..."
-                />
-              </div>
+              <DeviceImageUpload
+                label="Cover Image (Upload From Device Only)"
+                value={editingProject.image_url || ''}
+                onChange={(url) => setEditingProject((prev) => ({ ...prev, image_url: url }))}
+                category="projects"
+              />
 
               <div>
                 <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Short Description</label>

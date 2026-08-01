@@ -5,7 +5,7 @@ import app from './backend/app';
 import { testDatabaseConnection } from './backend/config/database';
 import { logger } from './backend/utils/logger';
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 async function startServer() {
   // Test MySQL connection

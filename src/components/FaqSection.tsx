@@ -14,6 +14,33 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
   const [openId, setOpenId] = useState<string | null>('faq-1');
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const parallaxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (sectionRef.current && parallaxRef.current) {
+            const rect = sectionRef.current.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const scrollProgress = (windowHeight - rect.top) / (windowHeight + rect.height);
+            const translateY = (scrollProgress - 0.5) * -20; // Subtle parallax float (-10px to +10px)
+            parallaxRef.current.style.transform = `translate3d(0, ${translateY.toFixed(2)}px, 0)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -71,11 +98,13 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
 
   return (
     <section
+      ref={sectionRef}
       id="section-faq"
-      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-between space-y-20"
+      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-[#050505] flex flex-col justify-between space-y-20 overflow-hidden"
     >
-      {/* FAQ Header with White Text Illumination Reveal */}
-      <div className="max-w-4xl mx-auto text-center space-y-4">
+      <div ref={parallaxRef} className="w-full flex flex-col justify-between space-y-20 my-auto will-change-transform transition-transform duration-75 ease-out">
+        {/* FAQ Header with White Text Illumination Reveal */}
+        <div className="max-w-4xl mx-auto text-center space-y-4">
         <h2
           ref={headingRef}
           className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
@@ -137,6 +166,7 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
           );
         })}
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
 }

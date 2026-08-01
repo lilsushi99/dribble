@@ -16,26 +16,40 @@ interface ProjectsPageProps {
 
 export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNavigateToContact }: ProjectsPageProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsRevealed(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const startPoint = windowHeight;
+            const endPoint = windowHeight * 0.1;
+            const totalDistance = startPoint - endPoint;
+            const scrollDistance = startPoint - rect.top;
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+            const rawProgress = scrollDistance / totalDistance;
+            const progress = Math.min(Math.max(rawProgress, 0), 1);
+            setScrollProgress(progress);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const projects: Project[] = [
@@ -145,8 +159,8 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
           <span
             className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
             style={{
-              opacity: isRevealed ? 1 : 0.35,
-              filter: isRevealed ? 'brightness(1)' : 'brightness(0.35)',
+              opacity: scrollProgress > 0.05 ? 1 : 0.35,
+              filter: scrollProgress > 0.05 ? 'brightness(1)' : 'brightness(0.35)',
             }}
           >
             Selected Works &&nbsp;
@@ -166,26 +180,41 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
           const isOther = isAnythingHovered && !isHovered;
           const isEven = idx % 2 === 0;
 
+          // Scroll-responsive factor (1 when un-assembled, 0 when fully assembled)
+          const easeProgress = 1 - Math.pow(1 - scrollProgress, 3);
+          const factor = 1 - easeProgress;
+
+          let transformVal = 'translate3d(0, 0, 0) rotate(0deg)';
+          if (isHovered) {
+            transformVal = 'scale(1.02) rotate(0deg)';
+          } else if (isOther) {
+            transformVal = 'scale(0.99) rotate(0deg)';
+          } else if (factor > 0.005) {
+            const offsetDist = 75 * factor;
+            const rotDeg = 5 * factor;
+            transformVal = isEven
+              ? `translate3d(-${offsetDist}px, 0, 0) rotate(-${rotDeg}deg)`
+              : `translate3d(${offsetDist}px, 0, 0) rotate(${rotDeg}deg)`;
+          }
+
+          const opacityVal = isOther ? 0.4 : Math.max(0.15, easeProgress);
+
+          const transitionVal = isAnythingHovered
+            ? 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, border-color 0.3s ease, filter 0.3s ease'
+            : 'transform 0.15s ease-out, opacity 0.15s ease-out, border-color 0.3s ease, filter 0.3s ease';
+
           return (
             <div
               key={proj.id}
-              className={`${proj.gridSpan} relative group cursor-pointer transition-all duration-500 rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0c] ${
+              className={`${proj.gridSpan} relative group cursor-pointer rounded-xl overflow-hidden border border-white/10 bg-[#0a0a0c] ${
                 isHovered
-                  ? 'z-30 scale-[1.02] shadow-2xl shadow-black border-white/50'
+                  ? 'z-30 shadow-2xl shadow-black border-white/50'
                   : 'z-10'
-              } ${isOther ? 'opacity-40 filter brightness-75 scale-[0.99]' : 'opacity-100'}`}
+              } ${isOther ? 'filter brightness-75' : ''}`}
               style={{
-                transform: isRevealed
-                  ? isHovered
-                    ? 'scale(1.02)'
-                    : isOther
-                    ? 'scale(0.99)'
-                    : 'translate3d(0, 0, 0)'
-                  : isEven
-                  ? 'translate3d(-24px, 0, 0)'
-                  : 'translate3d(24px, 0, 0)',
-                opacity: isRevealed ? (isOther ? 0.4 : 1) : 0,
-                transition: `transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 60}ms, opacity 0.6s ease-out ${idx * 60}ms, border-color 0.3s ease, filter 0.3s ease`,
+                transform: transformVal,
+                opacity: opacityVal,
+                transition: transitionVal,
               }}
               onMouseEnter={() => setHoveredId(proj.id)}
               onMouseLeave={() => setHoveredId(null)}

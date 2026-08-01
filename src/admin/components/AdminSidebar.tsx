@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ExternalLink,
   Sparkles,
+  Terminal,
 } from 'lucide-react';
 
 export type AdminTab =
@@ -24,7 +25,8 @@ export type AdminTab =
   | 'seo'
   | 'settings'
   | 'users'
-  | 'activity-logs';
+  | 'activity-logs'
+  | 'installation-guide';
 
 export interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -51,6 +53,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'settings' as AdminTab, label: 'System Settings', icon: Settings, badge: null },
     { id: 'users' as AdminTab, label: 'Users & Roles', icon: Users, badge: null },
     { id: 'activity-logs' as AdminTab, label: 'Activity Logs', icon: Activity, badge: null },
+    { id: 'installation-guide' as AdminTab, label: 'Installation Guide', icon: Terminal, badge: 'Hostinger' },
   ];
 
   return (

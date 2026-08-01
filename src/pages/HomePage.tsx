@@ -1,5 +1,6 @@
 import HeroSection from '../components/HeroSection';
 import ComicSection from '../components/ComicSection';
+import { MarqueeSection } from '../components/MarqueeSection';
 import ProjectsSection from '../components/ProjectsSection';
 import StudioSection from '../components/StudioSection';
 import FaqSection from '../components/FaqSection';
@@ -27,6 +28,9 @@ export default function HomePage({
 
       {/* 2. Comic Panel Section */}
       <ComicSection />
+
+      {/* 2.5 Creative Discipline Dual Ribbon Marquee */}
+      <MarqueeSection />
 
       {/* 3. Featured Projects Section */}
       <ProjectsSection

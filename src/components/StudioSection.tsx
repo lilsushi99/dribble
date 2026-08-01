@@ -30,6 +30,50 @@ export default function StudioSection() {
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
 
+  // Paragraph container ref for scroll progress opacity reveal
+  const paragraphsContainerRef = useRef<HTMLDivElement | null>(null);
+  const maxOpacityReachedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const el = paragraphsContainerRef.current;
+    if (!el) return;
+
+    el.style.opacity = '0.3';
+    el.style.willChange = 'opacity';
+
+    const handleScroll = () => {
+      if (maxOpacityReachedRef.current || !paragraphsContainerRef.current) return;
+
+      const rect = paragraphsContainerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      const startPoint = windowHeight;
+      const endPoint = windowHeight * 0.35;
+
+      if (rect.top <= startPoint) {
+        const scrollDistance = startPoint - rect.top;
+        const totalDistance = startPoint - endPoint;
+        const progress = Math.min(Math.max(scrollDistance / totalDistance, 0), 1);
+
+        const calculatedOpacity = 0.3 + progress * 0.7;
+        paragraphsContainerRef.current.style.opacity = calculatedOpacity.toFixed(3);
+
+        if (calculatedOpacity >= 0.99) {
+          paragraphsContainerRef.current.style.opacity = '1';
+          maxOpacityReachedRef.current = true;
+          window.removeEventListener('scroll', handleScroll);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   // Intersection Observer to trigger counting numbers every time section enters viewport
   useEffect(() => {
     let animFrame: number;
@@ -79,6 +123,41 @@ export default function StudioSection() {
     };
   }, []);
 
+  const activeReplayTimersRef = useRef<{ [key: string]: number }>({});
+
+  const handleMetricHover = (id: string, target: number) => {
+    setHoveredMetricId(id);
+
+    if (activeReplayTimersRef.current[id]) {
+      cancelAnimationFrame(activeReplayTimersRef.current[id]);
+    }
+
+    const duration = 1200;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      setMetrics((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          return {
+            ...m,
+            current: Number((target * easedProgress).toFixed(target % 1 !== 0 ? 1 : 0)),
+          };
+        })
+      );
+
+      if (progress < 1) {
+        activeReplayTimersRef.current[id] = requestAnimationFrame(animate);
+      }
+    };
+
+    activeReplayTimersRef.current[id] = requestAnimationFrame(animate);
+  };
+
   // Fan transformation offsets for 5 emerging thumbnails
   const fanOffsets = [
     { x: -52, y: -50, rot: -14, delay: '0ms' },
@@ -96,26 +175,26 @@ export default function StudioSection() {
     >
       {/* Top Editorial Story Grid */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-8">
-        {/* Left Heading - First Word 100% Opacity & Hover Opacity Interaction */}
+        {/* Left Heading - First Word Pure Black (#111115), Remaining words reduced opacity (#55555d) - Static */}
         <div className="md:col-span-5 md:pt-20">
-          <InteractiveHeading
-            as="h2"
-            firstWord="The"
-            middleText="Studio Story & Philosophy"
-            isLight={true}
-            className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light text-black tracking-tight leading-[1.06]"
-          />
+          <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06]">
+            <span className="text-[#111115] font-normal">The&nbsp;</span>
+            <span className="text-[#55555d] font-light">Studio Story & Philosophy</span>
+          </h2>
         </div>
 
-        {/* Right Long Editorial Text */}
-        <div className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg text-[#55555d] leading-relaxed">
+        {/* Right Long Editorial Text - Scroll progress opacity reveal, pure black P1 & grey-black P2/P3 */}
+        <div
+          ref={paragraphsContainerRef}
+          className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg leading-relaxed transition-opacity duration-75"
+        >
           <p className="text-[#111115] font-normal text-lg sm:text-xl leading-relaxed">
             Founded in 2018, KINETIC operates as a disciplined design laboratory at the intersection of brand architecture, physical motion systems, and digital craftsmanship.
           </p>
-          <p>
+          <p className="text-[#55555d]">
             With over eight years of rigorous practice spanning Tokyo, London, and New York, our mission is singular: to eliminate digital noise and engineer lasting visual monuments for visionary founders and global cultural institutions.
           </p>
-          <p>
+          <p className="text-[#55555d]">
             Our approach rejects generic SaaS conventions, pre-built template trends, and artificial decoration. We treat digital spaces with the same architectural gravity, material honesty, and physical inertia as stone, steel, and light.
           </p>
         </div>
@@ -130,7 +209,7 @@ export default function StudioSection() {
             return (
               <div
                 key={m.id}
-                onMouseEnter={() => setHoveredMetricId(m.id)}
+                onMouseEnter={() => handleMetricHover(m.id, m.target)}
                 onMouseLeave={() => setHoveredMetricId(null)}
                 className="relative group transition-all duration-300 ease-out"
               >

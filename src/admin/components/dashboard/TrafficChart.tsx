@@ -8,6 +8,18 @@ export interface TrafficChartProps {
 }
 
 export const TrafficChart: React.FC<TrafficChartProps> = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <Card className="w-full text-center py-12 space-y-2">
+        <TrendingUp className="w-8 h-8 text-slate-400 dark:text-zinc-600 mx-auto" />
+        <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">No Visitor Telemetry Recorded Yet</h3>
+        <p className="text-xs text-slate-400 dark:text-zinc-500 max-w-sm mx-auto">
+          Traffic trends will dynamically chart pageviews and unique visitors in real-time as users visit your website.
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">

@@ -308,3 +308,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtitle
     </div>
   );
 };
+
+export * from './DeviceImageUpload';
+export * from './DeviceMultiImageUpload';
+

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Textarea, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui';
+import { Card, Button, Input, Textarea, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, DeviceImageUpload } from '../ui';
 import { adminApi } from '../../services/adminApi';
 import { BlogPostItem } from '../../types/admin.types';
 import { BookOpen, Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
@@ -33,13 +33,14 @@ export const BlogCmsManager: React.FC = () => {
       slug: '',
       excerpt: '',
       content: '',
-      cover_image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
+      cover_image: '',
       category_name: 'Design Manifesto',
       is_published: true,
       published_at: new Date().toISOString(),
     });
     setIsModalOpen(true);
   };
+
 
   const handleOpenEdit = (post: BlogPostItem) => {
     setEditingPost({ ...post });
@@ -202,15 +203,12 @@ export const BlogCmsManager: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Cover Image URL</label>
-                <Input
-                  type="text"
-                  value={editingPost.cover_image || ''}
-                  onChange={(e) => setEditingPost((prev) => ({ ...prev, cover_image: e.target.value }))}
-                  placeholder="https://images.unsplash.com/..."
-                />
-              </div>
+              <DeviceImageUpload
+                label="Cover Image (Upload From Device Only)"
+                value={editingPost.cover_image || ''}
+                onChange={(url) => setEditingPost((prev) => ({ ...prev, cover_image: url }))}
+                category="blog"
+              />
 
               <div>
                 <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Excerpt / Summary</label>

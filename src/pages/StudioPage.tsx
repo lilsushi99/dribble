@@ -16,7 +16,7 @@ interface Metric {
   suffix: string;
   prefix?: string;
   current: number;
-  thumbImg?: string;
+  thumbImgs: string[];
 }
 
 export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
@@ -28,14 +28,57 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
   const metricsRef = useRef<HTMLDivElement | null>(null);
 
   const initialMetrics: Metric[] = [
-    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImg: comic1 },
-    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImg: comic2 },
-    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImg: comic3 },
-    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImg: comic1 },
-    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImg: comic2 },
+    { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, comic1, comic2] },
+    { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImgs: [comic2, comic3, comic1, comic2, comic3] },
+    { id: 'm3', label: 'Design Awards', target: 24, suffix: '', current: 0, thumbImgs: [comic3, comic1, comic2, comic3, comic1] },
+    { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImgs: [comic1, comic2, comic3, comic1, comic2] },
+    { id: 'm5', label: 'Client Capital Raised', target: 450, prefix: '$', suffix: 'M+', current: 0, thumbImgs: [comic2, comic3, comic1, comic2, comic3] },
   ];
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
+
+  const activeReplayTimersRef = useRef<{ [key: string]: number }>({});
+
+  const handleMetricHover = (id: string, target: number) => {
+    setHoveredMetricId(id);
+
+    if (activeReplayTimersRef.current[id]) {
+      cancelAnimationFrame(activeReplayTimersRef.current[id]);
+    }
+
+    const duration = 1200;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      setMetrics((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          return {
+            ...m,
+            current: Number((target * easedProgress).toFixed(target % 1 !== 0 ? 1 : 0)),
+          };
+        })
+      );
+
+      if (progress < 1) {
+        activeReplayTimersRef.current[id] = requestAnimationFrame(animate);
+      }
+    };
+
+    activeReplayTimersRef.current[id] = requestAnimationFrame(animate);
+  };
+
+  const fanOffsets = [
+    { x: -52, y: -50, rot: -14, delay: '0ms' },
+    { x: -26, y: -62, rot: -7, delay: '40ms' },
+    { x: 0, y: -68, rot: 0, delay: '80ms' },
+    { x: 26, y: -62, rot: 7, delay: '120ms' },
+    { x: 52, y: -50, rot: 14, delay: '160ms' },
+  ];
 
   // Intersection observer for white text illumination reveal
   useEffect(() => {
@@ -194,28 +237,34 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
             return (
               <div
                 key={m.id}
-                onMouseEnter={() => setHoveredMetricId(m.id)}
+                onMouseEnter={() => handleMetricHover(m.id, m.target)}
                 onMouseLeave={() => setHoveredMetricId(null)}
                 className="relative group transition-all duration-300 ease-out"
               >
-                {/* Emerging artwork thumbnail on hover */}
-                {m.thumbImg && (
-                  <div
-                    className="absolute -top-3 right-3 w-12 h-16 rounded border border-white/20 overflow-hidden shadow-md transition-all duration-300 pointer-events-none z-0"
-                    style={{
-                      transform: isHovered
-                        ? 'translate3d(6px, -12px, 0) rotate(4deg)'
-                        : 'translate3d(0, 0, 0) rotate(0deg)',
-                      opacity: isHovered ? 0.85 : 0,
-                    }}
-                  >
-                    <img
-                      src={m.thumbImg}
-                      alt=""
-                      className="w-full h-full object-cover filter grayscale contrast-125"
-                    />
-                  </div>
-                )}
+                {/* 5 Comic artwork thumbnails emerging sequentially on hover */}
+                {m.thumbImgs.map((imgSrc, imgIdx) => {
+                  const offset = fanOffsets[imgIdx];
+
+                  return (
+                    <div
+                      key={imgIdx}
+                      className="absolute top-0 left-1/2 -ml-6 w-12 h-16 rounded border border-white/20 overflow-hidden shadow-xl pointer-events-none z-0"
+                      style={{
+                        transform: isHovered
+                          ? `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${offset.rot}deg)`
+                          : 'translate3d(0, 0, 0) rotate(0deg)',
+                        opacity: isHovered ? 0.95 : 0,
+                        transition: `transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${offset.delay}, opacity 0.3s ease ${offset.delay}`,
+                      }}
+                    >
+                      <img
+                        src={imgSrc}
+                        alt=""
+                        className="w-full h-full object-cover filter contrast-110"
+                      />
+                    </div>
+                  );
+                })}
 
                 <div
                   className="relative z-10 bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 rounded-2xl flex flex-col justify-between space-y-4 transition-all duration-300"

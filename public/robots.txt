@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /canopy
+Disallow: /api/
+
+Sitemap: https://kinetic.studio/sitemap.xml
