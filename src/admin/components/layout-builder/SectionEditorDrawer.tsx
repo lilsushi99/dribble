@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutSection } from '../../types/admin.types';
 import { Drawer, Input, Switch, Button, DeviceImageUpload, DeviceMultiImageUpload } from '../ui';
-import { Save, Sparkles, Type, Link, Layers, Plus, Trash2, HelpCircle, Film, SlidersHorizontal, Palette } from 'lucide-react';
+import { Save, Sparkles, Type, Link, Layers, Plus, Trash2, HelpCircle, Film, SlidersHorizontal, Palette, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface SectionEditorDrawerProps {
   isOpen: boolean;
@@ -412,7 +412,7 @@ export const SectionEditorDrawer: React.FC<SectionEditorDrawerProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Button Text"
-                value={formData.primaryButtonText || 'Explore Our Studio'}
+                value={formData.primaryButtonText || 'View Studio'}
                 onChange={(e) => handleChange('primaryButtonText', e.target.value)}
               />
               <Input
@@ -420,6 +420,208 @@ export const SectionEditorDrawer: React.FC<SectionEditorDrawerProps> = ({
                 value={formData.primaryButtonLink || '/studio'}
                 onChange={(e) => handleChange('primaryButtonLink', e.target.value)}
               />
+            </div>
+
+            {/* Mission / Vision / Philosophy Cards Management */}
+            <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Mission / Vision / Philosophy Cards</span>
+              </h4>
+
+              <div className="space-y-3 p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">01 / Mission Card</span>
+                <Input
+                  label="Mission Title"
+                  value={custom.missionTitle || 'Eliminate Noise'}
+                  onChange={(e) => handleCustomSettingChange('missionTitle', e.target.value)}
+                />
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                    Mission Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={custom.missionDesc || 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.'}
+                    onChange={(e) => handleCustomSettingChange('missionDesc', e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-1.5 text-xs text-slate-900 dark:text-zinc-100 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">02 / Vision Card</span>
+                <Input
+                  label="Vision Title"
+                  value={custom.visionTitle || 'Permanence & Inertia'}
+                  onChange={(e) => handleCustomSettingChange('visionTitle', e.target.value)}
+                />
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                    Vision Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={custom.visionDesc || 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.'}
+                    onChange={(e) => handleCustomSettingChange('visionDesc', e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-1.5 text-xs text-slate-900 dark:text-zinc-100 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">03 / Philosophy Card</span>
+                <Input
+                  label="Philosophy Title"
+                  value={custom.philosophyTitle || 'Sculptural Rigor'}
+                  onChange={(e) => handleCustomSettingChange('philosophyTitle', e.target.value)}
+                />
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                    Philosophy Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={custom.philosophyDesc || 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.'}
+                    onChange={(e) => handleCustomSettingChange('philosophyDesc', e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-1.5 text-xs text-slate-900 dark:text-zinc-100 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Statistics Boxes Management */}
+            <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-500" />
+                    <span>Statistics Boxes Management</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Add, edit, reorder counter boxes and upload hover images directly from your computer.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentCards = custom.statsCards || [
+                      { id: '1', title: 'Clients Served', value: '83', images: [] },
+                      { id: '2', title: 'Projects Completed', value: '120', images: [] },
+                      { id: '3', title: 'Countries Worked In', value: '130', images: [] },
+                      { id: '4', title: 'Awards', value: '6', images: [] },
+                    ];
+                    const newCard = {
+                      id: Date.now().toString(),
+                      title: 'New Metric',
+                      value: '100',
+                      images: [],
+                    };
+                    handleCustomSettingChange('statsCards', [...currentCards, newCard]);
+                  }}
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Statistic Box
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {(custom.statsCards || [
+                  { id: '1', title: 'Clients Served', value: '83', images: [] },
+                  { id: '2', title: 'Projects Completed', value: '120', images: [] },
+                  { id: '3', title: 'Countries Worked In', value: '130', images: [] },
+                  { id: '4', title: 'Awards', value: '6', images: [] },
+                ]).map((card: any, idx: number, arr: any[]) => (
+                  <div
+                    key={card.id || idx}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2">
+                      <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px]">
+                          {idx + 1}
+                        </span>
+                        <span>{card.title || `Box #${idx + 1}`}</span>
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const cards = [...(custom.statsCards || arr)];
+                            const temp = cards[idx];
+                            cards[idx] = cards[idx - 1];
+                            cards[idx - 1] = temp;
+                            handleCustomSettingChange('statsCards', cards);
+                          }}
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === arr.length - 1}
+                          onClick={() => {
+                            const cards = [...(custom.statsCards || arr)];
+                            const temp = cards[idx];
+                            cards[idx] = cards[idx + 1];
+                            cards[idx + 1] = temp;
+                            handleCustomSettingChange('statsCards', cards);
+                          }}
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cards = (custom.statsCards || arr).filter((_: any, i: number) => i !== idx);
+                            handleCustomSettingChange('statsCards', cards);
+                          }}
+                          className="p-1 rounded hover:bg-rose-100 dark:hover:bg-rose-950 text-rose-500 cursor-pointer ml-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        label="Box Title"
+                        value={card.title || ''}
+                        onChange={(e) => {
+                          const cards = [...(custom.statsCards || arr)];
+                          cards[idx] = { ...cards[idx], title: e.target.value };
+                          handleCustomSettingChange('statsCards', cards);
+                        }}
+                        placeholder="e.g. Clients Served"
+                      />
+                      <Input
+                        label="Statistic Number"
+                        value={card.value || ''}
+                        onChange={(e) => {
+                          const cards = [...(custom.statsCards || arr)];
+                          cards[idx] = { ...cards[idx], value: e.target.value };
+                          handleCustomSettingChange('statsCards', cards);
+                        }}
+                        placeholder="e.g. 83"
+                      />
+                    </div>
+
+                    <DeviceMultiImageUpload
+                      label="Hover Images (Upload from Device Only)"
+                      values={card.images || []}
+                      onChange={(urls) => {
+                        const cards = [...(custom.statsCards || arr)];
+                        cards[idx] = { ...cards[idx], images: urls };
+                        handleCustomSettingChange('statsCards', cards);
+                      }}
+                      category="studio_metrics"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

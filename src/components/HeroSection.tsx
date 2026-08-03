@@ -78,15 +78,18 @@ export default function HeroSection({
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 pt-4">
-          {/* Primary Button: Chat With Us -> Opens Tawk.to Chat */}
+          {/* Primary Button: Chat With Us */}
           <button
             onClick={() => {
-              if (window.Tawk_API?.maximize) {
-                window.Tawk_API.maximize();
-              } else if (window.Tawk_API?.toggle) {
-                window.Tawk_API.toggle();
+              const api = window.Tawk_API as any;
+              if (api?.maximize) {
+                api.maximize();
+              } else if (api?.toggle) {
+                api.toggle();
+              } else if (api?.popup) {
+                api.popup();
               } else {
-                alert('Chat widget is loading. Please try again in a moment.');
+                onOpenBookCall();
               }
             }}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-7 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer shadow-lg shadow-[#0097FF]/20"
@@ -119,9 +122,6 @@ export default function HeroSection({
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </button>
-
-          {/* Book a Call Button -> Calendly */}
-        
         </div>
       </div>
     </section>

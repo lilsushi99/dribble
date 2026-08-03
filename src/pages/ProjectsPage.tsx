@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
+import { useSettings } from '../context/SettingsContext';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -15,9 +16,17 @@ interface ProjectsPageProps {
 }
 
 export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNavigateToContact }: ProjectsPageProps) {
+  const { settings } = useSettings();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const heroHeading = settings.projects_hero_heading || 'Selected Works & Commissions';
+  const heroSubheading = settings.projects_hero_subheading || 'An editorial archive of interactive monuments, physical artefacts, brand identities, and spatial structures built between 2018 and present.';
+  const ctaHeading = settings.projects_cta_heading || 'Ready to build something together?';
+  const ctaSubheading = settings.projects_cta_subheading || 'Our partners review all project inquiries personally within 24 hours.';
+  const ctaButtonText = settings.projects_cta_button_text || 'Book a Call';
+  const ctaButtonUrl = settings.projects_cta_button_url || '/contact';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -163,12 +172,11 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
               filter: scrollProgress > 0.05 ? 'brightness(1)' : 'brightness(0.35)',
             }}
           >
-            Selected Works &&nbsp;
+            {heroHeading}
           </span>
-          <span className="text-[#E6A800]">Commissions</span>
         </h1>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] font-normal leading-relaxed">
-          An editorial archive of interactive monuments, physical artefacts, brand identities, and spatial structures built between 2018 and present.
+          {heroSubheading}
         </p>
       </div>
 
@@ -253,15 +261,17 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
       {/* Final Contact CTA */}
       <div className="pt-16 pb-8 border-t border-white/10 text-center space-y-6 max-w-2xl mx-auto">
         <h2 className="font-outfit text-3xl sm:text-5xl font-light text-white tracking-tight">
-          Ready to build <span className="text-[#E6A800]">something together?</span>
+          {ctaHeading}
         </h2>
         <p className="font-inter text-sm sm:text-base text-[#9a9a9e]">
-          Our partners review all project inquiries personally within 24 hours.
+          {ctaSubheading}
         </p>
         <div className="pt-2">
           <button
             onClick={() => {
-              if (onNavigateToContact) {
+              if (ctaButtonUrl && ctaButtonUrl.startsWith('http')) {
+                window.open(ctaButtonUrl, '_blank');
+              } else if (onNavigateToContact) {
                 onNavigateToContact();
               } else {
                 onOpenBookCall();
@@ -269,7 +279,7 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
             }}
             className="inline-flex items-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-8 py-3.5 text-sm font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
           >
-            <span>Book a Call</span>
+            <span>{ctaButtonText}</span>
             <svg
               className="w-4 h-4"
               fill="none"

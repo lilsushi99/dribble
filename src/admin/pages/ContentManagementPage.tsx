@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Card, Badge, Button } from '../components/ui';
-import { FileText, FolderKanban, BookOpen, HelpCircle, Sparkles } from 'lucide-react';
+import { FolderKanban, Sparkles } from 'lucide-react';
 import { ProjectCmsManager } from '../components/cms/ProjectCmsManager';
-import { BlogCmsManager } from '../components/cms/BlogCmsManager';
 import { StudioCmsManager } from '../components/cms/StudioCmsManager';
 
 export interface ContentManagementPageProps {
   onNavigateTab: (tab: any) => void;
 }
 
-export type CmsSubModule = 'projects' | 'studio' | 'blog' | 'faq';
+export type CmsSubModule = 'projects' | 'studio';
 
 export const ContentManagementPage: React.FC<ContentManagementPageProps> = () => {
   const [activeSubModule, setActiveSubModule] = useState<CmsSubModule>('projects');
@@ -17,8 +15,6 @@ export const ContentManagementPage: React.FC<ContentManagementPageProps> = () =>
   const tabs: Array<{ id: CmsSubModule; label: string; icon: React.FC<{ className?: string }> }> = [
     { id: 'projects', label: 'Projects', icon: FolderKanban },
     { id: 'studio', label: 'Studio', icon: Sparkles },
-    { id: 'blog', label: 'Editorial Blog', icon: BookOpen },
-    { id: 'faq', label: 'FAQ & Protocols', icon: HelpCircle },
   ];
 
   return (
@@ -48,16 +44,6 @@ export const ContentManagementPage: React.FC<ContentManagementPageProps> = () =>
       {/* Render Active Manager */}
       {activeSubModule === 'projects' && <ProjectCmsManager />}
       {activeSubModule === 'studio' && <StudioCmsManager />}
-      {activeSubModule === 'blog' && <BlogCmsManager />}
-      {activeSubModule === 'faq' && (
-        <Card className="p-8 text-center space-y-3">
-          <HelpCircle className="w-8 h-8 text-blue-500 mx-auto" />
-          <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Engagement FAQs & Protocols</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Managed through the Homepage Layout Builder FAQ section editor with full MySQL synchronization.
-          </p>
-        </Card>
-      )}
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
 import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
-import InteractiveHeading from './InteractiveHeading';
 
 interface Metric {
   id: string;
@@ -16,38 +16,101 @@ interface Metric {
   thumbImgs: string[];
 }
 
+interface ValueCard {
+  id: string;
+  number: string;
+  title: string;
+  description: string;
+}
+
 export default function StudioSection() {
+  const navigate = useNavigate();
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
   const [studioConfig, setStudioConfig] = useState<{
     heading: string;
-    story: string;
+    storyParagraphs: string[];
+    missionTitle: string;
+    missionDesc: string;
+    visionTitle: string;
+    visionDesc: string;
+    philosophyTitle: string;
+    philosophyDesc: string;
     buttonText: string;
     buttonUrl: string;
   }>({
-    heading: 'Our Story',
-    story: 'Founded in 2020, Comic Art Studio is a dedicated creative laboratory specializing in comic books, manga, visual storytelling, concept art, and illustration. Driven by a passion for artistic excellence and visual narrative, our studio merges traditional pen-and-ink craftsmanship with modern digital design to bring extraordinary characters and immersive worlds to life for creators and publishers worldwide.',
-    buttonText: 'READ MORE',
+    heading: 'Origin & Craft',
+    storyParagraphs: [
+      'Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.',
+      'Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.',
+      'We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.',
+      'Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.',
+    ],
+    missionTitle: 'Eliminate Noise',
+    missionDesc: 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.',
+    visionTitle: 'Permanence & Inertia',
+    visionDesc: 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.',
+    philosophyTitle: 'Sculptural Rigor',
+    philosophyDesc: 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.',
+    buttonText: 'View Studio',
     buttonUrl: '/studio',
   });
 
   useEffect(() => {
-    fetch('/api/v1/studio')
+    // Attempt to load layout section or studio data from API
+    fetch('/api/v1/settings')
       .then((res) => res.json())
       .then((resData) => {
-        const data = resData.data || resData;
-        if (data && data.story_content) {
-          setStudioConfig({
-            heading: 'Our Story',
-            story: data.story_content,
-            buttonText: data.cta_button_text || 'READ MORE',
-            buttonUrl: data.cta_button_url || '/studio',
-          });
+        const settings = resData.data || resData;
+        if (settings && settings.homepage_layout) {
+          const sections = JSON.parse(settings.homepage_layout);
+          const studioSec = sections.find((s: any) => s.key === 'studio');
+          if (studioSec) {
+            const custom = studioSec.customSettings || {};
+            setStudioConfig((prev) => ({
+              ...prev,
+              heading: studioSec.heading || custom.originHeading || 'Origin & Craft',
+              storyParagraphs: custom.storyContent
+                ? custom.storyContent.split('\n\n').filter(Boolean)
+                : studioSec.subheading
+                ? [studioSec.subheading]
+                : prev.storyParagraphs,
+              missionTitle: custom.missionTitle || prev.missionTitle,
+              missionDesc: custom.missionDesc || prev.missionDesc,
+              visionTitle: custom.visionTitle || prev.visionTitle,
+              visionDesc: custom.visionDesc || prev.visionDesc,
+              philosophyTitle: custom.philosophyTitle || prev.philosophyTitle,
+              philosophyDesc: custom.philosophyDesc || prev.philosophyDesc,
+              buttonText: studioSec.primaryButtonText || custom.buttonText || 'View Studio',
+              buttonUrl: studioSec.primaryButtonLink || custom.buttonUrl || '/studio',
+            }));
+          }
         }
       })
-      .catch((e) => console.warn('Using default studio section data', e));
+      .catch((e) => console.warn('Using default studio section layout data', e));
   }, []);
+
+  const valueCards: ValueCard[] = [
+    {
+      id: 'v1',
+      number: '01 / Mission',
+      title: studioConfig.missionTitle,
+      description: studioConfig.missionDesc,
+    },
+    {
+      id: 'v2',
+      number: '02 / Vision',
+      title: studioConfig.visionTitle,
+      description: studioConfig.visionDesc,
+    },
+    {
+      id: 'v3',
+      number: '03 / Philosophy',
+      title: studioConfig.philosophyTitle,
+      description: studioConfig.philosophyDesc,
+    },
+  ];
 
   const initialMetrics: Metric[] = [
     { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, p1Img, p2Img] },
@@ -59,7 +122,6 @@ export default function StudioSection() {
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
 
-  // Paragraph container ref for scroll progress opacity reveal
   const paragraphsContainerRef = useRef<HTMLDivElement | null>(null);
   const maxOpacityReachedRef = useRef<boolean>(false);
 
@@ -110,13 +172,12 @@ export default function StudioSection() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          const duration = 2000; // 2 seconds count up
+          const duration = 2000;
           const startTime = performance.now();
 
           const animate = (now: number) => {
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease out quad
             const easedProgress = 1 - (1 - progress) * (1 - progress);
 
             setMetrics((prevMetrics) =>
@@ -133,7 +194,6 @@ export default function StudioSection() {
 
           animFrame = requestAnimationFrame(animate);
         } else {
-          // Reset to 0 when leaving viewport so it re-animates on re-entry
           setMetrics((prevMetrics) =>
             prevMetrics.map((m) => ({ ...m, current: 0 }))
           );
@@ -187,7 +247,6 @@ export default function StudioSection() {
     activeReplayTimersRef.current[id] = requestAnimationFrame(animate);
   };
 
-  // Fan transformation offsets for 5 emerging thumbnails
   const fanOffsets = [
     { x: -52, y: -50, rot: -14, delay: '0ms' },
     { x: -26, y: -62, rot: -7, delay: '40ms' },
@@ -200,52 +259,53 @@ export default function StudioSection() {
     <section
       ref={sectionRef}
       id="section-studio-full"
-      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-white text-black flex flex-col justify-between space-y-24"
+      className="relative w-full min-h-screen py-24 px-6 sm:px-16 bg-white text-black flex flex-col justify-between space-y-20"
     >
-      {/* Top Editorial Story Grid */}
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-8">
-        {/* Left Heading */}
-        <div className="md:col-span-5 md:pt-20">
+      {/* 1. Top Editorial Story Grid */}
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-start pt-8">
+        {/* Left Heading: Origin & Craft */}
+        <div className="md:col-span-5 md:pt-4 sticky top-28">
           <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06] text-[#111115]">
             {studioConfig.heading}
           </h2>
         </div>
 
-        {/* Right Long Editorial Text & Read More Button */}
+        {/* Right Long Editorial Text */}
         <div
           ref={paragraphsContainerRef}
-          className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg leading-relaxed transition-opacity duration-75"
+          className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg leading-relaxed transition-opacity duration-75 text-[#111115]"
         >
-          <p className="text-[#111115] font-normal text-lg sm:text-xl leading-relaxed">
-            {studioConfig.story}
-          </p>
-
-          {/* Read More Button with 60° Arrow Icon */}
-          <div className="pt-2">
-            <a
-              href={studioConfig.buttonUrl}
-              className="inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-[#111115] hover:bg-black text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 hover:scale-105 group shadow-md"
-            >
-              <span>{studioConfig.buttonText}</span>
-              <svg
-                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                style={{ transform: 'rotate(15deg)' }}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="7" y1="17" x2="17" y2="7" />
-                <polyline points="7 7 17 7 17 17" />
-              </svg>
-            </a>
-          </div>
+          {studioConfig.storyParagraphs.map((para, idx) => (
+            <p key={idx} className={idx === 0 ? 'text-[#111115] font-normal text-lg sm:text-xl leading-relaxed' : 'text-[#333339] font-normal leading-relaxed'}>
+              {para}
+            </p>
+          ))}
         </div>
       </div>
 
-      {/* Metrics Section - White cards with subtle hover lift & 5 emerging artwork thumbnails */}
+      {/* 2. Mission / Vision / Philosophy Cards directly below Story */}
+      <div className="max-w-7xl mx-auto w-full pt-12 border-t border-black/15">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          {valueCards.map((card) => (
+            <div
+              key={card.id}
+              className="bg-[#f8f8fa] border border-black/10 p-8 rounded-2xl space-y-4 hover:border-black/25 transition-all shadow-sm group"
+            >
+              <div className="text-xs font-inter uppercase tracking-widest text-[#0097FF] font-semibold">
+                {card.number}
+              </div>
+              <h3 className="font-outfit text-2xl text-[#111115] font-light group-hover:text-black transition-colors">
+                {card.title}
+              </h3>
+              <p className="font-inter text-sm text-[#55555d] leading-relaxed">
+                {card.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Statistics Section - Animated numbers with emerging thumbnails */}
       <div className="max-w-7xl mx-auto w-full pt-12 border-t border-black/15">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
           {metrics.map((m) => {
@@ -258,7 +318,7 @@ export default function StudioSection() {
                 onMouseLeave={() => setHoveredMetricId(null)}
                 className="relative group transition-all duration-300 ease-out"
               >
-                {/* 5 Comic artwork thumbnails emerging sequentially from behind metric card on hover */}
+                {/* 5 Artwork thumbnails emerging sequentially on hover */}
                 {m.thumbImgs.map((imgSrc, imgIdx) => {
                   const offset = fanOffsets[imgIdx];
 
@@ -305,7 +365,35 @@ export default function StudioSection() {
           })}
         </div>
       </div>
+
+      {/* 4. Bottom Button: View Studio */}
+      <div className="max-w-7xl mx-auto w-full pt-8 flex justify-center">
+        <button
+          onClick={() => {
+            if (studioConfig.buttonUrl && studioConfig.buttonUrl.startsWith('http')) {
+              window.open(studioConfig.buttonUrl, '_blank');
+            } else {
+              navigate(studioConfig.buttonUrl || '/studio');
+            }
+          }}
+          className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#111115] hover:bg-black text-white text-sm font-semibold tracking-wider transition-all duration-300 hover:scale-105 group shadow-lg cursor-pointer active:scale-95"
+        >
+          <span>{studioConfig.buttonText}</span>
+          <svg
+            className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+            style={{ transform: 'rotate(15deg)' }}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="7" y1="17" x2="17" y2="7" />
+            <polyline points="7 7 17 7 17 17" />
+          </svg>
+        </button>
+      </div>
     </section>
   );
 }
-

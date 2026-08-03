@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Input, Textarea, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, DeviceImageUpload, DeviceMultiImageUpload } from '../ui';
 import { adminApi } from '../../services/adminApi';
 import { ProjectCMSItem } from '../../types/admin.types';
-import { FolderKanban, Plus, Edit2, Trash2, X, Eye, EyeOff, Tag } from 'lucide-react';
+import { FolderKanban, Plus, Edit2, Trash2, X, Eye, EyeOff, Tag, Sparkles, Save, Type, Link, MessageSquare } from 'lucide-react';
 
 export const ProjectCmsManager: React.FC = () => {
   const [projects, setProjects] = useState<ProjectCMSItem[]>([]);
@@ -12,23 +12,81 @@ export const ProjectCmsManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
+  // Section 1: Hero fields state
+  const [heroHeading, setHeroHeading] = useState('Selected Works & Commissions');
+  const [heroSubheading, setHeroSubheading] = useState('An editorial archive of interactive monuments, physical artefacts, brand identities, and spatial structures built between 2018 and present.');
+  const [savingHero, setSavingHero] = useState(false);
+
+  // Section 3: Final CTA fields state
+  const [ctaHeading, setCtaHeading] = useState('Ready to build something together?');
+  const [ctaSubheading, setCtaSubheading] = useState('Our partners review all project inquiries personally within 24 hours.');
+  const [ctaButtonText, setCtaButtonText] = useState('Book a Call');
+  const [ctaButtonUrl, setCtaButtonUrl] = useState('/contact');
+  const [savingCta, setSavingCta] = useState(false);
+
   const SUGGESTED_TOOLS = ['Clip Studio Paint', 'Photoshop', 'Illustrator', 'Procreate', 'Figma', 'Blender'];
 
-  const loadProjects = async () => {
+  const loadProjectsAndSettings = async () => {
     setLoading(true);
     try {
-      const data = await adminApi.getProjects();
-      setProjects(data);
+      const [projData, globalSettings] = await Promise.all([
+        adminApi.getProjects(),
+        adminApi.getGlobalSettings(),
+      ]);
+      setProjects(projData);
+
+      if (globalSettings) {
+        if (globalSettings.projects_hero_heading) setHeroHeading(globalSettings.projects_hero_heading);
+        if (globalSettings.projects_hero_subheading) setHeroSubheading(globalSettings.projects_hero_subheading);
+        if (globalSettings.projects_cta_heading) setCtaHeading(globalSettings.projects_cta_heading);
+        if (globalSettings.projects_cta_subheading) setCtaSubheading(globalSettings.projects_cta_subheading);
+        if (globalSettings.projects_cta_button_text) setCtaButtonText(globalSettings.projects_cta_button_text);
+        if (globalSettings.projects_cta_button_url) setCtaButtonUrl(globalSettings.projects_cta_button_url);
+      }
     } catch (e) {
-      console.error('Failed to load projects', e);
+      console.error('Failed to load projects management data', e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadProjects();
+    loadProjectsAndSettings();
   }, []);
+
+  const handleSaveHero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingHero(true);
+    try {
+      await adminApi.updateGlobalSettings({
+        projects_hero_heading: heroHeading,
+        projects_hero_subheading: heroSubheading,
+      }, 'projects_page');
+      alert('Projects Page Hero settings saved successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to save Hero settings');
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
+  const handleSaveCta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCta(true);
+    try {
+      await adminApi.updateGlobalSettings({
+        projects_cta_heading: ctaHeading,
+        projects_cta_subheading: ctaSubheading,
+        projects_cta_button_text: ctaButtonText,
+        projects_cta_button_url: ctaButtonUrl,
+      }, 'projects_page');
+      alert('Bottom CTA settings saved successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to save CTA settings');
+    } finally {
+      setSavingCta(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingProject({
@@ -137,115 +195,235 @@ export const ProjectCmsManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header Card — Clean header without Sync button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-            <FolderKanban className="w-5 h-5" />
+    <div className="space-y-8">
+      {/* SECTION 1 — PROJECTS PAGE HERO */}
+      <Card className="p-6 space-y-4 border border-slate-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+              <Type className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Section 1 — Projects Page Hero</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">Controls the main heading and subtitle displayed at the top of the Projects page.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Projects CMS</h3>
-            <p className="text-xs text-slate-500 dark:text-zinc-400">Managed directly in MySQL database with Express REST API.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="primary" size="sm" onClick={handleOpenAdd}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add New Project
+          <Button type="button" variant="primary" size="sm" onClick={handleSaveHero} disabled={savingHero}>
+            <Save className="w-3.5 h-3.5 mr-1.5" />
+            {savingHero ? 'Saving...' : 'Save Hero Section'}
           </Button>
         </div>
+
+        <form onSubmit={handleSaveHero} className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+              Main Heading
+            </label>
+            <Input
+              type="text"
+              value={heroHeading}
+              onChange={(e) => setHeroHeading(e.target.value)}
+              placeholder="e.g. Selected Works & Commissions"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+              Sub Heading
+            </label>
+            <Textarea
+              rows={2}
+              value={heroSubheading}
+              onChange={(e) => setHeroSubheading(e.target.value)}
+              placeholder="e.g. An editorial archive of interactive monuments..."
+            />
+          </div>
+        </form>
+      </Card>
+
+      {/* SECTION 2 — PROJECTS LIST */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+              <FolderKanban className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Section 2 — Projects List</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">Manage individual portfolio projects, case studies, images, and visibility.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add New Project
+            </Button>
+          </div>
+        </div>
+
+        {/* Project Repository Table */}
+        <Card className="overflow-hidden">
+          {loading ? (
+            <div className="p-12 text-center text-xs text-slate-500">Loading projects...</div>
+          ) : projects.length === 0 ? (
+            <div className="p-16 text-center space-y-3">
+              <FolderKanban className="w-10 h-10 text-slate-300 dark:text-zinc-700 mx-auto" />
+              <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200">No Projects Found</h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Your projects list is currently empty. Click "Add New Project" above to create your first portfolio entry.
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cover</TableHead>
+                  <TableHead>Project Title & Slug</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((proj) => (
+                  <TableRow key={proj.id}>
+                    <TableCell>
+                      {proj.image_url ? (
+                        <img
+                          src={proj.image_url}
+                          alt={proj.title}
+                          className="w-14 h-10 object-cover rounded-md border border-slate-200 dark:border-zinc-800 bg-zinc-950"
+                        />
+                      ) : (
+                        <div className="w-14 h-10 rounded-md border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] text-slate-400">
+                          No Image
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-semibold text-slate-900 dark:text-zinc-100">
+                      <div>{proj.title}</div>
+                      <div className="text-[11px] font-normal text-slate-400 dark:text-zinc-500 font-mono">/{proj.slug}</div>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-600 dark:text-zinc-300">{proj.client || '—'}</TableCell>
+                    <TableCell className="text-xs text-slate-600 dark:text-zinc-300">{proj.year}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {proj.is_published ? (
+                          <Badge variant="blue">Visible</Badge>
+                        ) : (
+                          <Badge variant="neutral">Hidden</Badge>
+                        )}
+                        {proj.is_featured && <Badge variant="accent">Show on Homepage</Badge>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTogglePublish(proj)}
+                          title={proj.is_published ? 'Hide Project' : 'Unhide Project'}
+                        >
+                          {proj.is_published ? (
+                            <span className="flex items-center gap-1 text-slate-500 hover:text-amber-500">
+                              <EyeOff className="w-3.5 h-3.5" />
+                              <span>Hide</span>
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-slate-500 hover:text-emerald-500">
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Unhide</span>
+                            </span>
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(proj)} title="Edit Project">
+                          <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(proj.id)} title="Delete Project">
+                          <Trash2 className="w-4 h-4 text-rose-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Card>
       </div>
 
-      {/* Project Repository Table */}
-      <Card className="overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-xs text-slate-500">Loading projects...</div>
-        ) : projects.length === 0 ? (
-          <div className="p-16 text-center space-y-3">
-            <FolderKanban className="w-10 h-10 text-slate-300 dark:text-zinc-700 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200">No Projects Found</h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Your projects list is currently empty. Click "Add New Project" above to create your first portfolio entry.
-            </p>
+      {/* SECTION 3 — FINAL CTA (BOTTOM OF PROJECTS PAGE) */}
+      <Card className="p-6 space-y-4 border border-slate-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Section 3 — Final CTA (Bottom of Projects Page)</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">Controls the Call-To-Action section at the bottom of the Projects page.</p>
+            </div>
           </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Cover</TableHead>
-                <TableHead>Project Title & Slug</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Year</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((proj) => (
-                <TableRow key={proj.id}>
-                  <TableCell>
-                    {proj.image_url ? (
-                      <img
-                        src={proj.image_url}
-                        alt={proj.title}
-                        className="w-14 h-10 object-cover rounded-md border border-slate-200 dark:border-zinc-800 bg-zinc-950"
-                      />
-                    ) : (
-                      <div className="w-14 h-10 rounded-md border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] text-slate-400">
-                        No Image
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-semibold text-slate-900 dark:text-zinc-100">
-                    <div>{proj.title}</div>
-                    <div className="text-[11px] font-normal text-slate-400 dark:text-zinc-500 font-mono">/{proj.slug}</div>
-                  </TableCell>
-                  <TableCell className="text-xs text-slate-600 dark:text-zinc-300">{proj.client || '—'}</TableCell>
-                  <TableCell className="text-xs text-slate-600 dark:text-zinc-300">{proj.year}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {proj.is_published ? (
-                        <Badge variant="blue">Visible</Badge>
-                      ) : (
-                        <Badge variant="neutral">Hidden</Badge>
-                      )}
-                      {proj.is_featured && <Badge variant="accent">Show on Homepage</Badge>}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleTogglePublish(proj)}
-                        title={proj.is_published ? 'Hide Project' : 'Unhide Project'}
-                      >
-                        {proj.is_published ? (
-                          <span className="flex items-center gap-1 text-slate-500 hover:text-amber-500">
-                            <EyeOff className="w-3.5 h-3.5" />
-                            <span>Hide</span>
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-slate-500 hover:text-emerald-500">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Unhide</span>
-                          </span>
-                        )}
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(proj)} title="Edit Project">
-                        <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(proj.id)} title="Delete Project">
-                        <Trash2 className="w-4 h-4 text-rose-500" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+          <Button type="button" variant="primary" size="sm" onClick={handleSaveCta} disabled={savingCta}>
+            <Save className="w-3.5 h-3.5 mr-1.5" />
+            {savingCta ? 'Saving...' : 'Save CTA Section'}
+          </Button>
+        </div>
+
+        <form onSubmit={handleSaveCta} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                Main Heading
+              </label>
+              <Input
+                type="text"
+                value={ctaHeading}
+                onChange={(e) => setCtaHeading(e.target.value)}
+                placeholder="e.g. Ready to build something together?"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                Button Text
+              </label>
+              <Input
+                type="text"
+                value={ctaButtonText}
+                onChange={(e) => setCtaButtonText(e.target.value)}
+                placeholder="e.g. Book a Call"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                Sub Heading
+              </label>
+              <Textarea
+                rows={2}
+                value={ctaSubheading}
+                onChange={(e) => setCtaSubheading(e.target.value)}
+                placeholder="e.g. Our partners review all project inquiries personally within 24 hours."
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                Button URL
+              </label>
+              <Input
+                type="text"
+                value={ctaButtonUrl}
+                onChange={(e) => setCtaButtonUrl(e.target.value)}
+                placeholder="e.g. /contact or https://calendly.com/..."
+              />
+            </div>
+          </div>
+        </form>
       </Card>
 
       {/* Add / Edit Project Form Modal */}
@@ -456,3 +634,4 @@ export const ProjectCmsManager: React.FC = () => {
     </div>
   );
 };
+
