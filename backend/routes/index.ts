@@ -9,6 +9,7 @@ import formRoutes from './form.routes';
 import studioRoutes from './studio.routes';
 import analyticsRoutes from './analytics.routes';
 import seoRoutes from './seo.routes';
+import homepageRoutes from './homepage.routes';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use('/settings', settingRoutes);
 router.use('/media', mediaRoutes);
 router.use('/forms', formRoutes);
 router.use('/studio', studioRoutes);
+router.use('/homepage', homepageRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/seo', seoRoutes);
 

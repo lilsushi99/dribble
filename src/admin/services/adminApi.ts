@@ -8,6 +8,7 @@ import {
   StudioPageData,
   BlogPostItem,
   SmtpSettings,
+  HomepageContent,
 } from '../types/admin.types';
 
 const API_BASE = '/api/v1';
@@ -191,6 +192,22 @@ export const adminApi = {
   async deleteProject(id: number): Promise<boolean> {
     await request(`/projects/${id}`, { method: 'DELETE' });
     return true;
+  },
+
+  // Homepage CMS
+  async getHomepageData(): Promise<HomepageContent> {
+    try {
+      return await request<HomepageContent>('/homepage');
+    } catch (e) {
+      return defaultHomepageData;
+    }
+  },
+
+  async updateHomepageData(data: Partial<HomepageContent>): Promise<HomepageContent> {
+    return request<HomepageContent>('/homepage', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   },
 
   // Studio CMS
@@ -476,6 +493,60 @@ export const defaultAnalytics: DashboardAnalytics = {
 };
 
 export const defaultProjects: ProjectCMSItem[] = [];
+
+export const defaultHomepageData: HomepageContent = {
+  id: 1,
+  hero_heading: 'Crafting Digital Monuments with Sequential Comic Precision',
+  hero_subtitle:
+    'Comic Art Studio operates as an independent design laboratory bridging physical motion architecture, editorial visual identity, and high-performance digital systems.',
+  hero_cta_primary_text: 'Chat With Us',
+  hero_cta_primary_url: '#',
+  hero_cta_secondary_text: 'View Portfolio',
+  hero_cta_secondary_url: '/projects',
+  story_title: 'The Origin & Craft',
+  story_subtitle: 'Uncompromising discipline meets bespoke visual storytelling.',
+  story_content:
+    'Founded in 2018, Comic Art Studio emerged from a conviction that modern digital interfaces had succumbed to disposable SaaS visual formulas, homogenized component libraries, and visual noise. With over eight years of international practice, our partners approach digital architecture with the same material gravity, tactile inertia, and editorial permanence as stone, steel, and light.',
+  mission_statement:
+    'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.',
+  vision_statement:
+    'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.',
+  philosophy_statement:
+    'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.',
+  statistics_json: [
+    { label: 'Clients Served', value: '82' },
+    { label: 'Projects Delivered', value: '120' },
+    { label: 'Countries', value: '14' },
+    { label: 'Design Awards', value: '6' },
+  ],
+  marquee_items_json: [
+    'Storyboard',
+    'Character Design',
+    'Comic Art',
+    'Visual Development',
+    'Concept Art',
+    'Manga',
+    'Sequential Art',
+    'Illustration',
+    'World Building',
+    'Narrative Design',
+    'Digital Painting',
+    'Environment Design',
+    'Creative Direction',
+    'Graphic Storytelling',
+    'Editorial Illustration',
+    'Visual Identity',
+    'Motion Graphics',
+    'Brand Design',
+    'Typography',
+    'Animation',
+  ],
+  cta_title: 'Initiate Your Commission',
+  cta_subtitle:
+    'Partner with our studio to engineer a bespoke digital monument tailored to your brand architecture.',
+  cta_button_text: 'Connect with Atelier',
+  cta_button_url: '/contact',
+};
 
 export const defaultStudioData: StudioPageData = {
   id: 1,

@@ -144,6 +144,39 @@ export interface StudioPageData {
   updated_at?: string;
 }
 
+export interface HomepageStat {
+  label: string;
+  value: string;
+}
+
+export interface HomepageContent {
+  id?: number;
+  // Hero Section
+  hero_heading: string;
+  hero_subtitle: string;
+  hero_cta_primary_text: string;
+  hero_cta_primary_url: string;
+  hero_cta_secondary_text: string;
+  hero_cta_secondary_url: string;
+  // Story Section
+  story_title: string;
+  story_subtitle: string;
+  story_content: string;
+  // Mission / Vision / Philosophy
+  mission_statement: string;
+  vision_statement: string;
+  philosophy_statement: string;
+  // Statistics & Marquee
+  statistics_json: HomepageStat[];
+  marquee_items_json: string[];
+  // CTA Banner
+  cta_title: string;
+  cta_subtitle: string;
+  cta_button_text: string;
+  cta_button_url: string;
+  updated_at?: string;
+}
+
 export interface BlogPostItem {
   id: number;
   title: string;

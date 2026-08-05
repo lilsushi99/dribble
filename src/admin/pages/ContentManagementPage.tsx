@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { FolderKanban, Sparkles } from 'lucide-react';
+import { FolderKanban, Sparkles, Home as HomeIcon } from 'lucide-react';
 import { ProjectCmsManager } from '../components/cms/ProjectCmsManager';
 import { StudioCmsManager } from '../components/cms/StudioCmsManager';
+import { HomeCmsManager } from '../components/cms/HomeCmsManager';
 
 export interface ContentManagementPageProps {
   onNavigateTab: (tab: any) => void;
 }
 
-export type CmsSubModule = 'projects' | 'studio';
+export type CmsSubModule = 'home' | 'projects' | 'studio';
 
 export const ContentManagementPage: React.FC<ContentManagementPageProps> = () => {
-  const [activeSubModule, setActiveSubModule] = useState<CmsSubModule>('projects');
+  const [activeSubModule, setActiveSubModule] = useState<CmsSubModule>('home');
 
   const tabs: Array<{ id: CmsSubModule; label: string; icon: React.FC<{ className?: string }> }> = [
+    { id: 'home', label: 'Home', icon: HomeIcon },
     { id: 'projects', label: 'Projects', icon: FolderKanban },
     { id: 'studio', label: 'Studio', icon: Sparkles },
   ];
@@ -42,6 +44,7 @@ export const ContentManagementPage: React.FC<ContentManagementPageProps> = () =>
       </div>
 
       {/* Render Active Manager */}
+      {activeSubModule === 'home' && <HomeCmsManager />}
       {activeSubModule === 'projects' && <ProjectCmsManager />}
       {activeSubModule === 'studio' && <StudioCmsManager />}
     </div>

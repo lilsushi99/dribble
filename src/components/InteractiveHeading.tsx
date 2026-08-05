@@ -35,9 +35,11 @@ export default function InteractiveHeading({
   return (
     <Component className={`cursor-default ${className}`} style={scrollStyle}>
       {/* First Word - Always 100% Opacity */}
-      <span className={`inline-block font-normal ${wordColor}`}>
-        {firstWord}&nbsp;
-      </span>
+      {firstWord && (
+        <span className={`inline-block font-normal ${wordColor}`}>
+          {firstWord}&nbsp;
+        </span>
+      )}
 
       {/* Middle Text */}
       {middleText && (

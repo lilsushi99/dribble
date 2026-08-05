@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSettings } from '../context/SettingsContext';
 
 interface FaqItem {
   id: string;
@@ -11,6 +12,7 @@ interface FaqSectionProps {
 }
 
 export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
+  const { settings } = useSettings();
   const [openId, setOpenId] = useState<string | null>('faq-1');
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
@@ -59,7 +61,7 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
     return () => observer.disconnect();
   }, []);
 
-  const faqs: FaqItem[] = [
+  const defaultFaqs: FaqItem[] = [
     {
       id: 'faq-1',
       question: 'What is the typical engagement timeline for a full commission?',
@@ -91,6 +93,18 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
         'Simply submit our commission inquiry form with high-level details regarding your scope, timeline, and goals. We will arrange a private 30-minute discovery consultation.',
     },
   ];
+
+  let faqs: FaqItem[] = defaultFaqs;
+  if (settings?.homepage_faqs) {
+    try {
+      const parsed: FaqItem[] = JSON.parse(settings.homepage_faqs);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        faqs = parsed;
+      }
+    } catch (e) {
+      // Keep defaults on malformed JSON
+    }
+  }
 
   const toggleFaq = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));

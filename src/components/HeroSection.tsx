@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import heroNebulaImg from '../assets/images/hero_nebula_bg_1785513124347.jpg';
 import InteractiveHeading from './InteractiveHeading';
 import { useSettings } from '../context/SettingsContext';
+import { adminApi, defaultHomepageData } from '../admin/services/adminApi';
+import { HomepageContent } from '../admin/types/admin.types';
 
 interface HeroSectionProps {
   onOpenBookCall: () => void;
@@ -9,6 +11,7 @@ interface HeroSectionProps {
   bgType?: 'image' | 'color';
   bgImage?: string;
   bgColor?: string;
+  homeContent?: HomepageContent | null;
 }
 
 export default function HeroSection({
@@ -17,10 +20,12 @@ export default function HeroSection({
   bgType = 'image',
   bgImage,
   bgColor = '#000000',
+  homeContent,
 }: HeroSectionProps) {
   const { settings } = useSettings();
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLDivElement | null>(null);
+  const [content, setContent] = useState<HomepageContent>(homeContent || defaultHomepageData);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -39,6 +44,31 @@ export default function HeroSection({
     return () => observer.disconnect();
   }, []);
 
+  // If HomePage didn't already supply fetched content (e.g. component used standalone),
+  // fall back to fetching it directly so the hero is never stuck on hardcoded copy.
+  useEffect(() => {
+    if (homeContent) {
+      setContent(homeContent);
+      return;
+    }
+    let isMounted = true;
+    adminApi.getHomepageData().then((data) => {
+      if (isMounted && data) setContent(data);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [homeContent]);
+
+  // The heading is stored as a single editable string in the CMS. To preserve the
+  // existing "last word in accent color" visual treatment without a redesign, the
+  // final word is rendered in the accent color and the rest in white.
+  const headingWords = (content.hero_heading || '').trim().split(/\s+/).filter(Boolean);
+  const headingLead = headingWords.length > 1 ? headingWords.slice(0, -1).join(' ') : '';
+  const headingAccent = headingWords.length > 0 ? headingWords[headingWords.length - 1] : 'Comic Book Artist';
+
+  const heroBackgroundImage = settings?.hero_background_image || bgImage || heroNebulaImg;
+
   return (
     <section
       id="section-home"
@@ -49,7 +79,7 @@ export default function HeroSection({
       {bgType !== 'color' && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <img
-            src={bgImage || heroNebulaImg}
+            src={heroBackgroundImage}
             alt="Cosmic space nebula background"
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover object-center opacity-85 scale-105 transform-gpu"
@@ -65,9 +95,8 @@ export default function HeroSection({
         <div ref={headingRef}>
           <InteractiveHeading
             as="h1"
-            firstWord="Comic"
-            middleText="Book"
-            yellowText="Artist"
+            firstWord={headingLead}
+            yellowText={headingAccent}
             isIlluminated={isIlluminated}
             className="font-outfit text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#f3f3f3] tracking-tight leading-[1.08] max-w-3xl"
           />
@@ -75,7 +104,7 @@ export default function HeroSection({
 
         {/* Sub Heading */}
         <p className="font-inter text-base sm:text-lg md:text-xl text-[#9a9a9e] font-normal leading-relaxed max-w-2xl text-center">
-          {settings.hero_subheading ||
+          {content.hero_subtitle ||
             'Comic Art Studio is a premier creative studio specializing in bespoke comic book illustration, sequential storytelling, manga pages, graphic novels, character design, concept art, and visual storytelling.'}
         </p>
 
@@ -97,7 +126,7 @@ export default function HeroSection({
             }}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-7 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer shadow-lg shadow-[#0097FF]/20"
           >
-            <span>Chat With Us</span>
+            <span>{content.hero_cta_primary_text || 'Chat With Us'}</span>
             <svg
               className="w-4 h-4"
               fill="none"
@@ -114,7 +143,7 @@ export default function HeroSection({
             onClick={onViewProjects}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white/50 bg-transparent hover:bg-white/5 text-white rounded-full px-7 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
           >
-            <span>View Portfolio</span>
+            <span>{content.hero_cta_secondary_text || 'View Portfolio'}</span>
             <svg
               className="w-4 h-4"
               fill="none"
