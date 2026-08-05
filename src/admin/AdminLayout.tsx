@@ -88,12 +88,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
       const res = await adminApi.login(email, pass);
       setIsAuthenticated(true);
       if (res.user) setCurrentUser(res.user);
-  } catch (e: any) {
+    } catch (e: any) {
       setIsAuthenticated(false);
       setCurrentUser(null);
       throw new Error(e?.message || 'Invalid email or password');
     }
-  };
   };
 
   // Logout handler
