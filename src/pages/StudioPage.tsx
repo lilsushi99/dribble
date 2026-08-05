@@ -3,6 +3,8 @@ import ComicSection from '../components/ComicSection';
 import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
 import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
+import { adminApi } from '../admin/services/adminApi';
+import { StudioPageData } from '../admin/types/admin.types';
 
 interface StudioPageProps {
   onOpenBookCall: () => void;
@@ -26,6 +28,34 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
 
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const metricsRef = useRef<HTMLDivElement | null>(null);
+
+  const [studioData, setStudioData] = useState<StudioPageData | null>(null);
+
+  useEffect(() => {
+    async function loadStudioData() {
+      try {
+        const data = await adminApi.getStudioData();
+        if (data) {
+          setStudioData(data);
+          if (data.stats_cards && data.stats_cards.length > 0) {
+            setMetrics(
+              data.stats_cards.map((s: any, idx: number) => ({
+                id: s.id || `m${idx + 1}`,
+                label: s.title || s.label || 'Metric',
+                target: parseFloat(String(s.value).replace(/[^0-9.]/g, '')) || 100,
+                suffix: String(s.value).replace(/[0-9.]/g, '') || '',
+                current: 0,
+                thumbImgs: [comic1, comic2, comic3, comic1, comic2],
+              }))
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch studio page data:', err);
+      }
+    }
+    loadStudioData();
+  }, []);
 
   const initialMetrics: Metric[] = [
     { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, comic1, comic2] },
@@ -145,11 +175,18 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
           ref={headingRef}
           className="font-outfit text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.06] text-white"
         >
-          <span className="text-white">Our&nbsp;</span>
-          <span className="text-[#E6A800]">Story</span>
+          {studioData?.intro_heading ? (
+            studioData.intro_heading
+          ) : (
+            <>
+              <span className="text-white">Our&nbsp;</span>
+              <span className="text-[#E6A800]">Story</span>
+            </>
+          )}
         </h1>
         <p className="font-inter text-lg sm:text-xl text-[#9a9a9e] font-normal leading-relaxed">
-          Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga, and collaborative visual arts.
+          {studioData?.intro_subtitle ||
+            'Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga, and collaborative visual arts.'}
         </p>
       </div>
 
@@ -157,50 +194,46 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pt-8 border-t border-white/10">
         <div className="md:col-span-4">
           <h2 className="font-outfit text-2xl sm:text-3xl font-light text-white tracking-tight sticky top-32">
-            The Origin & Craft
+            {studioData?.story_heading || 'The Origin & Craft'}
           </h2>
         </div>
         <div className="md:col-span-8 space-y-6 font-inter text-base sm:text-lg text-[#9a9a9e] leading-relaxed">
-          <p className="text-white font-medium text-lg sm:text-xl leading-relaxed">
-            Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.
-          </p>
-          <p>
-            Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.
-          </p>
-          <p>
-            We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.
-          </p>
-          <p>
-            Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.
-          </p>
+          {studioData?.story_content ? (
+            <div dangerouslySetInnerHTML={{ __html: studioData.story_content }} />
+          ) : (
+            <>
+              <p className="text-white font-medium text-lg sm:text-xl leading-relaxed">
+                Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.
+              </p>
+              <p>
+                Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.
+              </p>
+              <p>
+                We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.
+              </p>
+              <p>
+                Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Mission, Vision & Creative Philosophy Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-white/10">
-        <div className="bg-[#0a0a0c] border border-white/10 p-8 rounded-2xl space-y-4 hover:border-white/20 transition-colors">
-          <div className="text-xs font-inter uppercase tracking-widest text-[#E6A800]">01 / Mission</div>
-          <h3 className="font-outfit text-2xl text-white font-light">Eliminate Noise</h3>
-          <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
-            To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.
-          </p>
-        </div>
-
-        <div className="bg-[#0a0a0c] border border-white/10 p-8 rounded-2xl space-y-4 hover:border-white/20 transition-colors">
-          <div className="text-xs font-inter uppercase tracking-widest text-[#E6A800]">02 / Vision</div>
-          <h3 className="font-outfit text-2xl text-white font-light">Permanence & Inertia</h3>
-          <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
-            A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.
-          </p>
-        </div>
-
-        <div className="bg-[#0a0a0c] border border-white/10 p-8 rounded-2xl space-y-4 hover:border-white/20 transition-colors">
-          <div className="text-xs font-inter uppercase tracking-widest text-[#E6A800]">03 / Philosophy</div>
-          <h3 className="font-outfit text-2xl text-white font-light">Sculptural Rigor</h3>
-          <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
-            We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.
-          </p>
-        </div>
+        {(studioData?.value_cards && studioData.value_cards.length > 0 ? studioData.value_cards : [
+          { id: '1', title: 'Eliminate Noise', description: 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.' },
+          { id: '2', title: 'Permanence & Inertia', description: 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.' },
+          { id: '3', title: 'Sculptural Rigor', description: 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.' },
+        ]).map((card, idx) => (
+          <div key={card.id || idx} className="bg-[#0a0a0c] border border-white/10 p-8 rounded-2xl space-y-4 hover:border-white/20 transition-colors">
+            <div className="text-xs font-inter uppercase tracking-widest text-[#E6A800]">0{idx + 1} / {card.title.split(' ')[0]}</div>
+            <h3 className="font-outfit text-2xl text-white font-light">{card.title}</h3>
+            <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
+              {card.description}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Reused Animated Comic Section */}
@@ -272,31 +305,39 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
       </div>
 
       {/* Final Studio CTA: Explore Selected Projects */}
-      <div className="pt-16 pb-8 border-t border-white/10 text-center space-y-6 max-w-3xl mx-auto">
-        <h2 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight">
-          You’ve seen how we think. <span className="text-[#E6A800]">Now explore what we’ve built.</span>
-        </h2>
-        <p className="font-inter text-base sm:text-lg text-[#9a9a9e]">
-          Examine our curated archive of interactive monuments, physical artefacts, and digital brand architecture.
-        </p>
-        <div className="pt-4">
-          <button
-            onClick={onNavigateToProjects}
-            className="inline-flex items-center justify-center gap-3 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-10 py-4 text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
-          >
-            <span>Explore Selected Projects</span>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
+      {studioData?.show_cta !== false && (
+        <div className="pt-16 pb-8 border-t border-white/10 text-center space-y-6 max-w-3xl mx-auto">
+          <h2 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight">
+            {studioData?.cta_heading || "You’ve seen how we think. Now explore what we’ve built."}
+          </h2>
+          <p className="font-inter text-base sm:text-lg text-[#9a9a9e]">
+            {studioData?.cta_description || "Examine our curated archive of interactive monuments, physical artefacts, and digital brand architecture."}
+          </p>
+          <div className="pt-4">
+            <button
+              onClick={() => {
+                if (studioData?.cta_button_url && studioData.cta_button_url.startsWith('http')) {
+                  window.open(studioData.cta_button_url, '_blank');
+                } else {
+                  onNavigateToProjects();
+                }
+              }}
+              className="inline-flex items-center justify-center gap-3 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-10 py-4 text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-            </svg>
-          </button>
+              <span>{studioData?.cta_button_text || "Explore Selected Projects"}</span>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

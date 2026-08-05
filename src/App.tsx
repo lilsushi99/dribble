@@ -12,6 +12,7 @@ import HomePage from './pages/HomePage';
 import StudioPage from './pages/StudioPage';
 import ProjectsPage from './pages/ProjectsPage';
 import BlogPage from './pages/BlogPage';
+import BlogDetailPage from './pages/BlogDetailPage';
 import ContactPage from './pages/ContactPage';
 
 import { AdminLayout } from './admin/AdminLayout';
@@ -68,7 +69,7 @@ export default function App() {
     const path = location.pathname;
     if (path === '/studio') return 'studio';
     if (path === '/projects') return 'projects';
-    if (path === '/blog') return 'blog';
+    if (path.startsWith('/blog')) return 'blog';
     if (path === '/contact') return 'contact';
     return 'home';
   };
@@ -131,6 +132,14 @@ export default function App() {
             path="/blog"
             element={
               <BlogPage
+                onOpenBookCall={() => setIsBookCallOpen(true)}
+              />
+            }
+          />
+          <Route
+            path="/blog/:slug"
+            element={
+              <BlogDetailPage
                 onOpenBookCall={() => setIsBookCallOpen(true)}
               />
             }

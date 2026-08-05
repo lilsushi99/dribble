@@ -18,6 +18,7 @@ import { DashboardOverviewPage } from './pages/DashboardOverviewPage';
 import { LayoutBuilderPage } from './pages/LayoutBuilderPage';
 import { MediaLibraryPage } from './pages/MediaLibraryPage';
 import { ContentManagementPage } from './pages/ContentManagementPage';
+import { BlogCmsManager } from './components/cms/BlogCmsManager';
 import { FormsPage } from './pages/FormsPage';
 import { SeoPage } from './pages/SeoPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -87,25 +88,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
       const res = await adminApi.login(email, pass);
       setIsAuthenticated(true);
       if (res.user) setCurrentUser(res.user);
-    } catch (e: any) {
-      // Fallback for demo mode
-      if (email === 'admin@kinetic.studio') {
-        const mockUser: AdminUser = {
-          id: 1,
-          email,
-          first_name: 'Principal',
-          last_name: 'Admin',
-          role_id: 1,
-          role_name: 'Super Admin',
-        };
-        setIsAuthenticated(true);
-        setCurrentUser(mockUser);
-        localStorage.setItem('kinetic_admin_token', 'demo_jwt_token_2026');
-        localStorage.setItem('kinetic_admin_user', JSON.stringify(mockUser));
-      } else {
-        throw new Error('Invalid email or password');
-      }
+  } catch (e: any) {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      throw new Error(e?.message || 'Invalid email or password');
     }
+  };
   };
 
   // Logout handler
@@ -116,9 +104,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
   };
 
   // Save layout sections
-  const handleSaveSections = async (updatedSections: LayoutSection[]) => {
+ const handleSaveSections = async (updatedSections: LayoutSection[]) => {
+    const ok = await adminApi.saveHomepageLayout(updatedSections);
+    if (!ok) {
+      throw new Error('Failed to save layout to the database. Check that you are logged in and the backend is reachable.');
+    }
     setSections(updatedSections);
-    await adminApi.saveHomepageLayout(updatedSections);
   };
 
   // Upload Media
@@ -164,6 +155,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
     dashboard: 'Dashboard Overview',
     'layout-builder': 'Homepage Layout Builder',
     'content-management': 'Content Management Engine',
+    blog: 'Blog Page & Article Management',
     'media-library': 'Digital Media Library',
     forms: 'Form Submissions & Leads',
     seo: 'SEO & Meta Settings',
@@ -222,6 +214,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
             {activeTab === 'content-management' && (
               <ContentManagementPage onNavigateTab={setActiveTab} />
             )}
+
+            {activeTab === 'blog' && <BlogCmsManager />}
 
             {activeTab === 'media-library' && (
               <MediaLibraryPage

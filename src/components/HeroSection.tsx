@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import heroNebulaImg from '../assets/images/hero_nebula_bg_1785513124347.jpg';
 import InteractiveHeading from './InteractiveHeading';
+import { useSettings } from '../context/SettingsContext';
 
 interface HeroSectionProps {
   onOpenBookCall: () => void;
@@ -17,6 +18,7 @@ export default function HeroSection({
   bgImage,
   bgColor = '#000000',
 }: HeroSectionProps) {
+  const { settings } = useSettings();
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLDivElement | null>(null);
 
@@ -73,7 +75,8 @@ export default function HeroSection({
 
         {/* Sub Heading */}
         <p className="font-inter text-base sm:text-lg md:text-xl text-[#9a9a9e] font-normal leading-relaxed max-w-2xl text-center">
-          Comic Art Studio is a premier creative studio specializing in bespoke comic book illustration, sequential storytelling, manga pages, graphic novels, character design, concept art, and visual storytelling.
+          {settings.hero_subheading ||
+            'Comic Art Studio is a premier creative studio specializing in bespoke comic book illustration, sequential storytelling, manga pages, graphic novels, character design, concept art, and visual storytelling.'}
         </p>
 
         {/* CTA Buttons */}

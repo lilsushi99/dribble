@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
 import { useSettings } from '../context/SettingsContext';
+import { adminApi } from '../admin/services/adminApi';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -8,6 +9,105 @@ import p3Img from '../assets/images/project_artwork_3_1785513218624.jpg';
 import p4Img from '../assets/images/hero_nebula_bg_1785513124347.jpg';
 import p5Img from '../assets/images/comic_panel_1_1785513144023.jpg';
 import p6Img from '../assets/images/comic_panel_3_1785513168462.jpg';
+
+const defaultProjectsList: Project[] = [
+  {
+    id: 'proj-1',
+    title: 'Monolith Architectural Pavilion',
+    client: 'Vanguard Space Group',
+    year: '2026',
+    category: 'Spatial Design & Identity',
+    description: 'A brutalist obsidian pavilion designed for acoustic isolation and digital resonance.',
+    imageUrl: p1Img,
+    aspectRatio: 'aspect-[4/3]',
+    gridSpan: 'col-span-12 md:col-span-7',
+    route: '/projects/monolith-pavilion',
+  },
+  {
+    id: 'proj-2',
+    title: 'Aether Artefact Series',
+    client: 'Kuroda Museum Tokyo',
+    year: '2025',
+    category: 'Physical Industrial Craft',
+    description: 'Precision brass and obsidian sculptures exploring tactile physical interfaces.',
+    imageUrl: p2Img,
+    aspectRatio: 'aspect-[3/4]',
+    gridSpan: 'col-span-12 md:col-span-5',
+    route: '/projects/aether-artefact',
+  },
+  {
+    id: 'proj-3',
+    title: 'Nocturne Spatial Chair',
+    client: 'Atelier Nocturne London',
+    year: '2025',
+    category: 'Object & Furniture',
+    description: 'A matte black steel chair cast in single-point directional lighting.',
+    imageUrl: p3Img,
+    aspectRatio: 'aspect-[1/1]',
+    gridSpan: 'col-span-12 md:col-span-4',
+    route: '/projects/nocturne-chair',
+  },
+  {
+    id: 'proj-4',
+    title: 'Cosmic Edge Identity',
+    client: 'Orbital Research Lab',
+    year: '2026',
+    category: 'Brand Architecture',
+    description: 'Deep cosmic imagery coupled with minimal typographic systems for aerospace innovation.',
+    imageUrl: p4Img,
+    aspectRatio: 'aspect-[16/9]',
+    gridSpan: 'col-span-12 md:col-span-8',
+    route: '/projects/cosmic-edge',
+  },
+  {
+    id: 'proj-5',
+    title: 'Manga Monograph Monolith',
+    client: 'Graphic Novel Press',
+    year: '2025',
+    category: 'Editorial Monograph',
+    description: 'Sequential ink drawings compiled into a limited edition linen-bound volume.',
+    imageUrl: p5Img,
+    aspectRatio: 'aspect-[3/4]',
+    gridSpan: 'col-span-12 md:col-span-5',
+    route: '/projects/manga-monograph',
+  },
+  {
+    id: 'proj-6',
+    title: 'Void Monolithic Structure',
+    client: 'Sora Foundation Zurich',
+    year: '2026',
+    category: 'Spatial Installations',
+    description: 'Abstract geometric monoliths erected in high-altitude topography.',
+    imageUrl: p6Img,
+    aspectRatio: 'aspect-[16/10]',
+    gridSpan: 'col-span-12 md:col-span-7',
+    route: '/projects/void-structure',
+  },
+  {
+    id: 'proj-7',
+    title: 'Helios Solar Observatory',
+    client: 'Atacama Space Institute',
+    year: '2026',
+    category: 'Interaction Architecture',
+    description: 'Real-time telemetry interface for high-altitude solar magnetic field observation.',
+    imageUrl: p1Img,
+    aspectRatio: 'aspect-[16/9]',
+    gridSpan: 'col-span-12 md:col-span-8',
+    route: '/projects/helios-observatory',
+  },
+  {
+    id: 'proj-8',
+    title: 'Chronos Mechanical Timepiece',
+    client: 'Horology Geneva',
+    year: '2025',
+    category: 'Industrial Design',
+    description: 'Single-hand mechanical movement encased in dark titanium alloy.',
+    imageUrl: p2Img,
+    aspectRatio: 'aspect-[4/5]',
+    gridSpan: 'col-span-12 md:col-span-4',
+    route: '/projects/chronos-timepiece',
+  },
+];
 
 interface ProjectsPageProps {
   onSelectProject: (project: Project) => void;
@@ -20,6 +120,38 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [projects, setProjects] = useState<Project[]>(defaultProjectsList);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const fetched = await adminApi.getProjects();
+        if (fetched && fetched.length > 0) {
+          const mapped: Project[] = fetched
+            .filter((p) => p.is_published)
+            .map((p, idx) => ({
+              id: String(p.id),
+              title: p.title,
+              client: p.client || 'Client',
+              year: String(p.year || '2026'),
+              category: p.description?.substring(0, 30) || 'Design',
+              description: p.description || '',
+              imageUrl: p.image_url || p1Img,
+              aspectRatio: p.aspect_ratio || (idx % 2 === 0 ? 'aspect-[4/3]' : 'aspect-[16/9]'),
+              gridSpan: p.grid_span || (idx % 3 === 0 ? 'col-span-12 md:col-span-7' : 'col-span-12 md:col-span-5'),
+              route: `/projects/${p.slug}`,
+              full_case_study: p.full_case_study,
+              tools_used: p.tools_used,
+              gallery_images: p.gallery_images,
+            }));
+          setProjects(mapped);
+        }
+      } catch (err) {
+        console.warn('Could not load dynamic projects:', err);
+      }
+    }
+    loadProjects();
+  }, []);
 
   const heroHeading = settings.projects_hero_heading || 'Selected Works & Commissions';
   const heroSubheading = settings.projects_hero_subheading || 'An editorial archive of interactive monuments, physical artefacts, brand identities, and spatial structures built between 2018 and present.';
@@ -60,105 +192,6 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  const projects: Project[] = [
-    {
-      id: 'proj-1',
-      title: 'Monolith Architectural Pavilion',
-      client: 'Vanguard Space Group',
-      year: '2026',
-      category: 'Spatial Design & Identity',
-      description: 'A brutalist obsidian pavilion designed for acoustic isolation and digital resonance.',
-      imageUrl: p1Img,
-      aspectRatio: 'aspect-[4/3]',
-      gridSpan: 'col-span-12 md:col-span-7',
-      route: '/projects/monolith-pavilion',
-    },
-    {
-      id: 'proj-2',
-      title: 'Aether Artefact Series',
-      client: 'Kuroda Museum Tokyo',
-      year: '2025',
-      category: 'Physical Industrial Craft',
-      description: 'Precision brass and obsidian sculptures exploring tactile physical interfaces.',
-      imageUrl: p2Img,
-      aspectRatio: 'aspect-[3/4]',
-      gridSpan: 'col-span-12 md:col-span-5',
-      route: '/projects/aether-artefact',
-    },
-    {
-      id: 'proj-3',
-      title: 'Nocturne Spatial Chair',
-      client: 'Atelier Nocturne London',
-      year: '2025',
-      category: 'Object & Furniture',
-      description: 'A matte black steel chair cast in single-point directional lighting.',
-      imageUrl: p3Img,
-      aspectRatio: 'aspect-[1/1]',
-      gridSpan: 'col-span-12 md:col-span-4',
-      route: '/projects/nocturne-chair',
-    },
-    {
-      id: 'proj-4',
-      title: 'Cosmic Edge Identity',
-      client: 'Orbital Research Lab',
-      year: '2026',
-      category: 'Brand Architecture',
-      description: 'Deep cosmic imagery coupled with minimal typographic systems for aerospace innovation.',
-      imageUrl: p4Img,
-      aspectRatio: 'aspect-[16/9]',
-      gridSpan: 'col-span-12 md:col-span-8',
-      route: '/projects/cosmic-edge',
-    },
-    {
-      id: 'proj-5',
-      title: 'Manga Monograph Monolith',
-      client: 'Graphic Novel Press',
-      year: '2025',
-      category: 'Editorial Monograph',
-      description: 'Sequential ink drawings compiled into a limited edition linen-bound volume.',
-      imageUrl: p5Img,
-      aspectRatio: 'aspect-[3/4]',
-      gridSpan: 'col-span-12 md:col-span-5',
-      route: '/projects/manga-monograph',
-    },
-    {
-      id: 'proj-6',
-      title: 'Void Monolithic Structure',
-      client: 'Sora Foundation Zurich',
-      year: '2026',
-      category: 'Spatial Installations',
-      description: 'Abstract geometric monoliths erected in high-altitude topography.',
-      imageUrl: p6Img,
-      aspectRatio: 'aspect-[16/10]',
-      gridSpan: 'col-span-12 md:col-span-7',
-      route: '/projects/void-structure',
-    },
-    {
-      id: 'proj-7',
-      title: 'Helios Solar Observatory',
-      client: 'Atacama Space Institute',
-      year: '2026',
-      category: 'Interaction Architecture',
-      description: 'Real-time telemetry interface for high-altitude solar magnetic field observation.',
-      imageUrl: p1Img,
-      aspectRatio: 'aspect-[16/9]',
-      gridSpan: 'col-span-12 md:col-span-8',
-      route: '/projects/helios-observatory',
-    },
-    {
-      id: 'proj-8',
-      title: 'Chronos Mechanical Timepiece',
-      client: 'Horology Geneva',
-      year: '2025',
-      category: 'Industrial Design',
-      description: 'Single-hand mechanical movement encased in dark titanium alloy.',
-      imageUrl: p2Img,
-      aspectRatio: 'aspect-[4/5]',
-      gridSpan: 'col-span-12 md:col-span-4',
-      route: '/projects/chronos-timepiece',
-    },
-  ];
 
   return (
     <div ref={containerRef} className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3] overflow-hidden">

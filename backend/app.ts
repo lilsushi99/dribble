@@ -15,6 +15,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static file serving for file uploads
 const uploadsPath = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
 app.use('/uploads', express.static(uploadsPath));
 
 // Serve sitemap.xml

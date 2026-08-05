@@ -82,10 +82,15 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await onSaveLayout(sections);
-    setIsSaving(false);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    try {
+      await onSaveLayout(sections);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to save. Check console/network tab for details.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

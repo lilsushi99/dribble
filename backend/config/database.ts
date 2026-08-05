@@ -41,9 +41,19 @@ export function isDbConnected(): boolean {
 
 // Wrapper to safely execute MySQL queries
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T> {
-  if (!isPoolConnected) {
-    throw new Error('Database connection not established.');
+  try {
+    const [rows] = await pool.execute(sql, params);
+    isPoolConnected = true;
+    return rows as T;
+  } catch (error: any) {
+    if (!isPoolConnected) {
+      // Try testing connection once more
+      const retested = await testDatabaseConnection();
+      if (retested) {
+        const [rows] = await pool.execute(sql, params);
+        return rows as T;
+      }
+    }
+    throw error;
   }
-  const [rows] = await pool.execute(sql, params);
-  return rows as T;
 }

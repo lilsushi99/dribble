@@ -101,6 +101,7 @@ CREATE TABLE `users` (
   FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Default Super Admin & Editor accounts (Hashed password: 'AdminPassword2026!')
 INSERT INTO `users` (`id`, `email`, `password_hash`, `first_name`, `last_name`, `role_id`, `avatar_url`, `is_active`) VALUES
 (1, 'admin@kinetic-studio.com', '$2a$10$wT8B14dYkM0Lg8P./f9r.OqR63R0iS98P.6L5sO2kU1.1e8x5a3yG', 'Super', 'Admin', 1, '/uploads/avatars/admin-avatar.jpg', 1),
 (2, 'editor@kinetic-studio.com', '$2a$10$wT8B14dYkM0Lg8P./f9r.OqR63R0iS98P.6L5sO2kU1.1e8x5a3yG', 'Creative', 'Editor', 3, '/uploads/avatars/editor-avatar.jpg', 1);

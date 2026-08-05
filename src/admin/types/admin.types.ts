@@ -155,8 +155,15 @@ export interface BlogPostItem {
   category_name?: string;
   author_id?: number;
   author_name?: string;
+  author_role?: string;
+  read_time?: string;
+  is_featured?: boolean;
   is_published: boolean;
   published_at?: string;
+  meta_title?: string;
+  meta_description?: string;
+  keywords?: string;
+  tags?: string[];
   view_count?: number;
   created_at?: string;
   updated_at?: string;

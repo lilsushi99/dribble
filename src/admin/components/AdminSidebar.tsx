@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Layers,
   FileText,
+  BookOpen,
   Image,
   Inbox,
   Search,
@@ -20,6 +21,7 @@ export type AdminTab =
   | 'dashboard'
   | 'layout-builder'
   | 'content-management'
+  | 'blog'
   | 'media-library'
   | 'forms'
   | 'seo'
@@ -47,6 +49,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: 'dashboard' as AdminTab, label: 'Dashboard', icon: LayoutDashboard, badge: null },
     { id: 'layout-builder' as AdminTab, label: 'Layout Builder', icon: Layers, badge: 'Core' },
     { id: 'content-management' as AdminTab, label: 'Content Management', icon: FileText, badge: null },
+    { id: 'blog' as AdminTab, label: 'Blog', icon: BookOpen, badge: null },
     { id: 'media-library' as AdminTab, label: 'Media Library', icon: Image, badge: null },
     { id: 'forms' as AdminTab, label: 'Forms', icon: Inbox, badge: '2 New' },
     { id: 'seo' as AdminTab, label: 'SEO Settings', icon: Search, badge: null },
