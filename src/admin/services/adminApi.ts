@@ -53,10 +53,26 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers,
   });
 
-  const data = await response.json();
+  let data: any = null;
+  try {
+    data = await response.json();
+  } catch (e) {
+    // Backend/host returned a non-JSON body (e.g. a proxy error page).
+    if (!response.ok) {
+      throw new Error(`Request failed (HTTP ${response.status} ${response.statusText || ''}).`.trim());
+    }
+    return undefined as unknown as T;
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || 'API Request failed');
+    if (response.status === 401) {
+      // Session expired or invalid — clear it so the admin is prompted to log in again
+      // instead of every subsequent save silently failing with the same generic error.
+      removeAuthToken();
+      localStorage.removeItem('kinetic_admin_user');
+      throw new Error(data?.error || data?.message || 'Your session has expired. Please log in again.');
+    }
+    throw new Error(data?.error || data?.message || `Request failed (HTTP ${response.status}).`);
   }
 
   return data.data !== undefined ? data.data : data;
@@ -102,21 +118,16 @@ export const adminApi = {
   },
 
   async saveHomepageLayout(sections: LayoutSection[]): Promise<boolean> {
-    try {
-      await request('/settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          settings: {
-            homepage_layout: JSON.stringify(sections),
-          },
-          category: 'layout',
-        }),
-      });
-      return true;
-    } catch (e) {
-      console.error('Failed to save layout:', e);
-      return false;
-    }
+    await request('/settings', {
+      method: 'PUT',
+      body: JSON.stringify({
+        settings: {
+          homepage_layout: JSON.stringify(sections),
+        },
+        category: 'layout',
+      }),
+    });
+    return true;
   },
 
   // Media Library

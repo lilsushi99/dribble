@@ -104,10 +104,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
 
   // Save layout sections
  const handleSaveSections = async (updatedSections: LayoutSection[]) => {
-    const ok = await adminApi.saveHomepageLayout(updatedSections);
-    if (!ok) {
-      throw new Error('Failed to save layout to the database. Check that you are logged in and the backend is reachable.');
-    }
+    await adminApi.saveHomepageLayout(updatedSections);
     setSections(updatedSections);
   };
 
