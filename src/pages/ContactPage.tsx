@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import ContactSection from '../components/ContactSection';
+import { useSeo } from '../hooks/useSeo';
 
 export default function ContactPage() {
+  useSeo('contact');
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

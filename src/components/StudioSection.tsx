@@ -5,6 +5,7 @@ import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
 import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
+import { adminApi } from '../admin/services/adminApi';
 
 interface Metric {
   id: string;
@@ -21,6 +22,18 @@ interface ValueCard {
   number: string;
   title: string;
   description: string;
+}
+
+const decorativeThumbPool = [comic1, comic2, comic3, p1Img, p2Img];
+
+// Statistics are stored in the DB as plain display strings (e.g. "148+", "99.8%", "$1M")
+// since that's what the admin actually types in. To preserve the count-up animation,
+// split each value into a leading prefix, a numeric target, and a trailing suffix.
+function parseStatValue(raw: string): { prefix: string; target: number; suffix: string } {
+  const match = (raw || '').trim().match(/^([^0-9.]*)([0-9]*\.?[0-9]+)([^0-9]*)$/);
+  if (!match) return { prefix: '', target: 0, suffix: raw || '' };
+  const [, prefix, numeric, suffix] = match;
+  return { prefix, target: parseFloat(numeric) || 0, suffix };
 }
 
 export default function StudioSection() {
@@ -58,7 +71,47 @@ export default function StudioSection() {
   });
 
   useEffect(() => {
-    // Attempt to load layout section or studio data from API
+    // Primary source: the dedicated homepage_content table (real CMS data).
+    adminApi.getHomepageData().then((home) => {
+      if (!home) return;
+      setStudioConfig((prev) => ({
+        ...prev,
+        heading: home.story_title || prev.heading,
+        storyParagraphs: home.story_content
+          ? home.story_content.split('\n\n').filter(Boolean)
+          : home.story_subtitle
+          ? [home.story_subtitle]
+          : prev.storyParagraphs,
+        missionTitle: 'Mission',
+        missionDesc: home.mission_statement || prev.missionDesc,
+        visionTitle: 'Vision',
+        visionDesc: home.vision_statement || prev.visionDesc,
+        philosophyTitle: 'Philosophy',
+        philosophyDesc: home.philosophy_statement || prev.philosophyDesc,
+      }));
+
+      if (home.statistics_json && home.statistics_json.length > 0) {
+        setMetrics(
+          home.statistics_json.slice(0, 5).map((stat, idx) => {
+            const { prefix, target, suffix } = parseStatValue(stat.value);
+            return {
+              id: `stat-${idx}`,
+              label: stat.label,
+              target,
+              prefix,
+              suffix,
+              current: 0,
+              thumbImgs: [0, 1, 2, 3, 4].map(
+                (i) => decorativeThumbPool[(idx + i) % decorativeThumbPool.length]
+              ),
+            };
+          })
+        );
+      }
+    });
+
+    // Button text/url has no equivalent in homepage_content, so it still comes from
+    // the Layout Builder (the only place it can currently be edited).
     fetch('/api/v1/settings')
       .then((res) => res.json())
       .then((resData) => {
@@ -70,25 +123,13 @@ export default function StudioSection() {
             const custom = studioSec.customSettings || {};
             setStudioConfig((prev) => ({
               ...prev,
-              heading: studioSec.heading || custom.originHeading || 'Origin & Craft',
-              storyParagraphs: custom.storyContent
-                ? custom.storyContent.split('\n\n').filter(Boolean)
-                : studioSec.subheading
-                ? [studioSec.subheading]
-                : prev.storyParagraphs,
-              missionTitle: custom.missionTitle || prev.missionTitle,
-              missionDesc: custom.missionDesc || prev.missionDesc,
-              visionTitle: custom.visionTitle || prev.visionTitle,
-              visionDesc: custom.visionDesc || prev.visionDesc,
-              philosophyTitle: custom.philosophyTitle || prev.philosophyTitle,
-              philosophyDesc: custom.philosophyDesc || prev.philosophyDesc,
-              buttonText: studioSec.primaryButtonText || custom.buttonText || 'View Studio',
-              buttonUrl: studioSec.primaryButtonLink || custom.buttonUrl || '/studio',
+              buttonText: studioSec.primaryButtonText || custom.buttonText || prev.buttonText,
+              buttonUrl: studioSec.primaryButtonLink || custom.buttonUrl || prev.buttonUrl,
             }));
           }
         }
       })
-      .catch((e) => console.warn('Using default studio section layout data', e));
+      .catch((e) => console.warn('Using default studio section button config', e));
   }, []);
 
   const valueCards: ValueCard[] = [

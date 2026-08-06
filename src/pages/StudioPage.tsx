@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSeo } from '../hooks/useSeo';
 import ComicSection from '../components/ComicSection';
 import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
@@ -22,6 +23,7 @@ interface Metric {
 }
 
 export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
+  useSeo('studio');
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isHeadingIlluminated, setIsHeadingIlluminated] = useState(false);
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);

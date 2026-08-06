@@ -9,6 +9,7 @@ import ContactSection from '../components/ContactSection';
 import { Project } from '../types';
 import { adminApi, defaultHomepageData } from '../admin/services/adminApi';
 import { HomepageContent } from '../admin/types/admin.types';
+import { useSeo } from '../hooks/useSeo';
 
 interface HomePageProps {
   onOpenBookCall: () => void;
@@ -22,6 +23,8 @@ export default function HomePage({
   onSelectProject,
 }: HomePageProps) {
   const [homeContent, setHomeContent] = useState<HomepageContent>(defaultHomepageData);
+
+  useSeo('homepage');
 
   useEffect(() => {
     let isMounted = true;

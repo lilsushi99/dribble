@@ -1,4 +1,5 @@
 import { MediaRepository } from '../repositories/media.repository';
+import { resolveUploadFolder } from '../config/upload';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,8 +10,16 @@ export class MediaService {
     return this.mediaRepo.findAll();
   }
 
-  async saveMediaRecord(file: Express.Multer.File, category = 'general', userId?: number) {
-    const relativePath = `/uploads/${category}/${file.filename}`;
+  async saveMediaRecord(
+    file: Express.Multer.File,
+    category = 'general',
+    userId?: number,
+    actualFolder?: string
+  ) {
+    // Use the folder the file was actually written to when available (set by the
+    // multer storage engine) so the DB path can never point somewhere the file isn't.
+    const folder = actualFolder || resolveUploadFolder(category);
+    const relativePath = `/uploads/${folder}/${file.filename}`;
     return this.mediaRepo.create({
       filename: file.filename,
       original_name: file.originalname,

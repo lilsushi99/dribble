@@ -325,7 +325,8 @@ export const HomeCmsManager: React.FC = () => {
             {openSections.story && (
               <div className="p-5 space-y-4 text-xs">
                 <p className="text-slate-500 dark:text-zinc-400">
-                  Also feeds the Studio Preview section on the homepage where the Layout Builder has no custom override set.
+                  This content also powers the "Origin & Craft" preview section on the homepage
+                  (heading, story, mission/vision/philosophy cards, and statistics).
                 </p>
                 <div>
                   <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Title</label>

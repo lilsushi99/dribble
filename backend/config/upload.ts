@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { Request } from 'express';
 
 // Ensure upload directories exist
 const uploadDirs = [
@@ -19,19 +20,35 @@ uploadDirs.forEach((dir) => {
   }
 });
 
+// Single source of truth for category -> physical folder mapping. Used by BOTH the
+// multer storage engine (to decide where to physically write the file) and the media
+// service (to decide what path to store in the DB), so the two can never drift apart.
+export function resolveUploadFolder(rawCategory: string | undefined): string {
+  const category = (rawCategory || 'general').toLowerCase();
+  if (category.includes('logo')) return 'logos';
+  if (category.includes('project')) return 'projects';
+  if (category.includes('blog')) return 'blog';
+  if (category.includes('studio')) return 'studio';
+  if (category.includes('comic')) return 'comic-panels';
+  return 'general';
+}
+
+export interface UploadRequest extends Request {
+  resolvedUploadFolder?: string;
+}
+
 // Storage engine definition
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const category = (req.body.category || 'general').toLowerCase();
-    let targetFolder = 'uploads/general';
-
-    if (category.includes('logo')) targetFolder = 'uploads/logos';
-    else if (category.includes('project')) targetFolder = 'uploads/projects';
-    else if (category.includes('blog')) targetFolder = 'uploads/blog';
-    else if (category.includes('studio')) targetFolder = 'uploads/studio';
-    else if (category.includes('comic')) targetFolder = 'uploads/comic-panels';
-
-    cb(null, path.join(process.cwd(), targetFolder));
+  destination: (req: UploadRequest, file, cb) => {
+    // NOTE: req.body.category is only reliably populated here if the 'category' field
+    // was sent BEFORE the 'file' field in the multipart form (multer/busboy parses the
+    // stream in order, and this callback fires as soon as the file part is reached).
+    // adminApi.uploadMedia() on the frontend appends 'category' first specifically so
+    // this works. If a future caller sends the file first, this will fall back to
+    // 'general' rather than silently mis-filing the upload.
+    const folder = resolveUploadFolder(req.body?.category);
+    req.resolvedUploadFolder = folder;
+    cb(null, path.join(process.cwd(), 'uploads', folder));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);

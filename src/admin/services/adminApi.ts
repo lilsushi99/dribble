@@ -142,8 +142,12 @@ export const adminApi = {
 
   async uploadMedia(file: File, category = 'general'): Promise<MediaFile> {
     const formData = new FormData();
-    formData.append('file', file);
+    // IMPORTANT: append category BEFORE file. Multer parses multipart form data in
+    // stream order and calls the storage engine's destination callback as soon as it
+    // reaches the file part — if category comes after, req.body.category is still
+    // undefined at that point and the file silently gets misfiled into uploads/general.
     formData.append('category', category);
+    formData.append('file', file);
 
     return request<MediaFile>('/media/upload', {
       method: 'POST',

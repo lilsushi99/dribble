@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutSection } from '../../types/admin.types';
 import { Card, Badge, Button, Switch } from '../ui';
 import {
@@ -34,6 +34,15 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   const [sections, setSections] = useState<LayoutSection[]>(initialSections);
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // initialSections is only used as the useState() seed on first mount — React does not
+  // re-run useState when a prop changes. Without this sync, editing a single section via
+  // the drawer saves correctly to the DB and updates the parent's state, but this
+  // component's local copy stays stale, so the next "Save Homepage Order" click silently
+  // overwrites that edit with the old data while still reporting success.
+  useEffect(() => {
+    setSections(initialSections);
+  }, [initialSections]);
 
   // Reorder up/down
   const moveSection = (index: number, direction: 'up' | 'down') => {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
 import { useSettings } from '../context/SettingsContext';
 import { adminApi } from '../admin/services/adminApi';
+import { useSeo } from '../hooks/useSeo';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -116,6 +117,7 @@ interface ProjectsPageProps {
 }
 
 export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNavigateToContact }: ProjectsPageProps) {
+  useSeo('projects');
   const { settings } = useSettings();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);

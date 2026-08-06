@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { adminApi, defaultBlogPosts } from '../admin/services/adminApi';
 import { BlogPostItem } from '../admin/types/admin.types';
 import { useSettings } from '../context/SettingsContext';
+import { useSeo } from '../hooks/useSeo';
 
 interface BlogPageProps {
   onOpenBookCall?: () => void;
 }
 
 export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
+  useSeo('blog');
   const navigate = useNavigate();
   const { settings } = useSettings();
 

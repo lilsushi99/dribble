@@ -7,7 +7,7 @@ export interface SectionEditorDrawerProps {
   isOpen: boolean;
   section: LayoutSection | null;
   onClose: () => void;
-  onSave: (updated: LayoutSection) => void;
+  onSave: (updated: LayoutSection) => Promise<void>;
   onOpenMediaPicker?: (onSelect: (url: string) => void) => void;
 }
 
@@ -18,9 +18,12 @@ export const SectionEditorDrawer: React.FC<SectionEditorDrawerProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<LayoutSection | null>(section);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     setFormData(section);
+    setSaveError(null);
   }, [section]);
 
   if (!formData) return null;
@@ -37,11 +40,20 @@ export const SectionEditorDrawer: React.FC<SectionEditorDrawerProps> = ({
     });
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData) {
-      onSave(formData);
+    if (!formData) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await onSave(formData);
       onClose();
+    } catch (err: any) {
+      // Keep the drawer open with the entered data intact and show the real reason
+      // instead of closing regardless of whether the save actually succeeded.
+      setSaveError(err?.message || 'Failed to save this section. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -777,12 +789,17 @@ export const SectionEditorDrawer: React.FC<SectionEditorDrawerProps> = ({
         )}
 
         {/* Submit Buttons */}
+        {saveError && (
+          <div className="p-3 rounded-xl text-xs font-semibold border bg-rose-500/10 text-rose-500 border-rose-500/20">
+            {saveError}
+          </div>
+        )}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-zinc-800">
-          <Button type="button" variant="ghost" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" icon={<Save className="w-4 h-4" />}>
-            Apply Changes
+          <Button type="submit" variant="primary" icon={<Save className="w-4 h-4" />} disabled={isSaving}>
+            {isSaving ? 'Applying...' : 'Apply Changes'}
           </Button>
         </div>
       </form>

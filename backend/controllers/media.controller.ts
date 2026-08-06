@@ -22,9 +22,10 @@ export class MediaController {
       }
 
       const category = req.body.category || 'general';
+      const resolvedFolder = (req as any).resolvedUploadFolder;
       const userId = req.user?.userId;
 
-      const mediaRecord = await this.mediaService.saveMediaRecord(req.file, category, userId);
+      const mediaRecord = await this.mediaService.saveMediaRecord(req.file, category, userId, resolvedFolder);
       return sendSuccess(res, mediaRecord, 'File uploaded and saved successfully', 201);
     } catch (err: any) {
       return sendError(res, err.message, 400);
