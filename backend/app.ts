@@ -5,6 +5,7 @@ import fs from 'fs';
 import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { SeoService } from './services/seo.service';
+import { isDbConnected, testDatabaseConnection } from './config/database';
 
 const app = express();
 
@@ -38,12 +39,27 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 // API Health Check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbConnected = isDbConnected();
+  // If we haven't seen a live connection yet, actively test once so this endpoint
+  // gives a true answer rather than a stale "not connected" from before any query ran.
+  if (!dbConnected) {
+    dbConnected = await testDatabaseConnection();
+  }
+
+  const requiredDbEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+  const missingEnvVars = requiredDbEnvVars.filter((key) => !process.env[key]);
+
   res.json({
     status: 'online',
     service: 'KINETIC CMS API',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
+    database: {
+      connected: dbConnected,
+      mode: dbConnected ? 'mysql' : 'in-memory fallback (changes will NOT be saved permanently)',
+      missing_env_vars: missingEnvVars.length > 0 ? missingEnvVars : undefined,
+    },
   });
 });
 
