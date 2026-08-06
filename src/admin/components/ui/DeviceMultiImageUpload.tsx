@@ -23,6 +23,7 @@ export const DeviceMultiImageUpload: React.FC<DeviceMultiImageUploadProps> = ({
 }) => {
   const currentValues = value || values || [];
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,24 +31,25 @@ export const DeviceMultiImageUpload: React.FC<DeviceMultiImageUploadProps> = ({
     if (files.length === 0) return;
 
     setIsUploading(true);
+    setUploadError(null);
     const uploadedPaths: string[] = [];
+    const failures: string[] = [];
 
     for (const file of files) {
       try {
         const media = await adminApi.uploadMedia(file, category);
         uploadedPaths.push(media.file_path);
-      } catch (err) {
-        // Fallback file reader if server not connected
-        const dataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (evt) => resolve((evt.target?.result as string) || '');
-          reader.readAsDataURL(file);
-        });
-        if (dataUrl) uploadedPaths.push(dataUrl);
+      } catch (err: any) {
+        failures.push(`${file.name}: ${err?.message || 'upload failed'}`);
       }
     }
 
-    onChange([...currentValues, ...uploadedPaths]);
+    if (uploadedPaths.length > 0) {
+      onChange([...currentValues, ...uploadedPaths]);
+    }
+    if (failures.length > 0) {
+      setUploadError(failures.join('; '));
+    }
     setIsUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -128,6 +130,8 @@ export const DeviceMultiImageUpload: React.FC<DeviceMultiImageUploadProps> = ({
       <p className="text-[11px] text-slate-400 dark:text-zinc-500">
         Upload images directly from your computer. Supported: <span className="font-semibold text-slate-600 dark:text-zinc-400">PNG, JPG, JPEG, WEBP, SVG</span>
       </p>
+
+      {uploadError && <p className="text-xs text-rose-500">{uploadError}</p>}
     </div>
   );
 };

@@ -32,15 +32,7 @@ export const DeviceImageUpload: React.FC<DeviceImageUploadProps> = ({
       const media = await adminApi.uploadMedia(file, category);
       onChange(media.file_path);
     } catch (err: any) {
-      console.warn('Backend upload failed, utilizing client file reader preview:', err);
-      // Fallback: read as Data URL if offline / local storage mode
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result) {
-          onChange(evt.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      setUploadError(err?.message || 'Upload failed. Please try again.');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

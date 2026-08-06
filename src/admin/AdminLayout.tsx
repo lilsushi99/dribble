@@ -33,6 +33,7 @@ export interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getAuthToken());
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(getAuthUser());
+  const [checkingSession, setCheckingSession] = useState<boolean>(!!getAuthToken());
 
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -44,6 +45,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>(defaultActivityLogs);
   const [formSubmissions, setFormSubmissions] = useState<FormSubmissionData[]>(defaultSubmissions);
   const [analytics, setAnalytics] = useState<DashboardAnalytics>(defaultAnalytics);
+
+  // A token merely existing in localStorage doesn't mean it's still valid (it may have
+  // expired, or belong to a previous deploy with a different JWT secret). Verify it against
+  // the backend once on mount so an invalid session shows the login screen immediately
+  // instead of silently rendering the dashboard and failing every save with a confusing error.
+  useEffect(() => {
+    if (!getAuthToken()) {
+      setCheckingSession(false);
+      return;
+    }
+    let isMounted = true;
+    adminApi
+      .getCurrentUser()
+      .then(() => {
+        if (isMounted) setIsAuthenticated(true);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setCheckingSession(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Handle Dark Mode toggling on document html
   useEffect(() => {
@@ -110,38 +140,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onViewWebsite }) => {
 
   // Upload Media
   const handleUploadMedia = async (file: File, category: string): Promise<MediaFile> => {
-    try {
-      const created = await adminApi.uploadMedia(file, category);
-      setMediaFiles((prev) => [created, ...prev]);
-      return created;
-    } catch (e) {
-      // Fallback memory creation
-      const localUrl = URL.createObjectURL(file);
-      const newMedia: MediaFile = {
-        id: Date.now(),
-        filename: file.name,
-        original_name: file.name,
-        mime_type: file.type || 'image/jpeg',
-        file_size: file.size,
-        file_path: localUrl,
-        category: category as any,
-        created_at: new Date().toISOString(),
-      };
-      setMediaFiles((prev) => [newMedia, ...prev]);
-      return newMedia;
-    }
+    const created = await adminApi.uploadMedia(file, category);
+    setMediaFiles((prev) => [created, ...prev]);
+    return created;
   };
 
   // Delete Media
   const handleDeleteMedia = async (id: number): Promise<boolean> => {
-    try {
-      await adminApi.deleteMedia(id);
-    } catch (e) {
-      // Memory fallback
-    }
+    await adminApi.deleteMedia(id);
     setMediaFiles((prev) => prev.filter((m) => m.id !== id));
     return true;
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen w-full bg-[#050505] flex items-center justify-center">
+        <div className="text-xs font-medium text-zinc-500">Checking session...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AdminLoginPage onLoginSuccess={handleLogin} />;

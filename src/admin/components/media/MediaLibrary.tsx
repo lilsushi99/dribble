@@ -91,8 +91,12 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   const handleDelete = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this media asset permanently?')) {
-      await onDeleteFile(id);
-      if (activePreview?.id === id) setActivePreview(null);
+      try {
+        await onDeleteFile(id);
+        if (activePreview?.id === id) setActivePreview(null);
+      } catch (err: any) {
+        alert(err?.message || 'Delete failed. Please check backend connection.');
+      }
     }
   };
 

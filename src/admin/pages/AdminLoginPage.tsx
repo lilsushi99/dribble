@@ -7,7 +7,7 @@ export interface AdminLoginPageProps {
 }
 
 export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('admin@kinetic.studio');
+  const [email, setEmail] = useState('admin@kinetic-studio.com');
   const [password, setPassword] = useState('AdminPassword2026!');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
