@@ -147,6 +147,7 @@ export interface StudioPageData {
 export interface HomepageStat {
   label: string;
   value: string;
+  image?: string;
 }
 
 export interface HomepageContent {

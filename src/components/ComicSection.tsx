@@ -3,8 +3,10 @@ import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
 import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
 import InteractiveHeading from './InteractiveHeading';
+import { useSettings } from '../context/SettingsContext';
 
 export default function ComicSection() {
+  const { settings } = useSettings();
   const [typedLength, setTypedLength] = useState(0);
 
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -16,22 +18,37 @@ export default function ComicSection() {
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
   const scrollRef3 = useRef<HTMLDivElement | null>(null);
 
+  // Panel images are CMS-driven (stored in settings) with the original bundled
+  // artwork as a graceful fallback when nothing has been uploaded yet.
+  const img1 = settings?.comic_panel_image_1 || comic1;
+  const img2 = settings?.comic_panel_image_2 || comic2;
+  const img3 = settings?.comic_panel_image_3 || comic3;
+
+  const heading = settings?.comic_panel_heading || 'Comic Panels';
+  const subtitle =
+    settings?.comic_panel_subtitle ||
+    'Immerse yourself in cinematic storytelling, expressive comic panels, dynamic manga pages, and sequential artwork crafted with emotion and visual depth.';
+
+  const headingWords = heading.trim().split(/\s+/).filter(Boolean);
+  const headingLead = headingWords.length > 1 ? headingWords.slice(0, -1).join(' ') : '';
+  const headingAccent = headingWords.length > 0 ? headingWords[headingWords.length - 1] : 'Panels';
+
   const panelSet1 = [
-    { id: 'p1-1', title: 'Chapter I: Monolith', image: comic1, chapter: '01' },
-    { id: 'p1-2', title: 'Chapter IV: Drafts', image: comic2, chapter: '04' },
-    { id: 'p1-3', title: 'Chapter VII: Silence', image: comic3, chapter: '07' },
+    { id: 'p1-1', title: 'Chapter I: Monolith', image: img1, chapter: '01' },
+    { id: 'p1-2', title: 'Chapter IV: Drafts', image: img2, chapter: '04' },
+    { id: 'p1-3', title: 'Chapter VII: Silence', image: img3, chapter: '07' },
   ];
 
   const panelSet2 = [
-    { id: 'p2-1', title: 'Chapter II: Craft', image: comic2, chapter: '02' },
-    { id: 'p2-2', title: 'Chapter V: Space', image: comic3, chapter: '05' },
-    { id: 'p2-3', title: 'Chapter VIII: Structure', image: comic1, chapter: '08' },
+    { id: 'p2-1', title: 'Chapter II: Craft', image: img2, chapter: '02' },
+    { id: 'p2-2', title: 'Chapter V: Space', image: img3, chapter: '05' },
+    { id: 'p2-3', title: 'Chapter VIII: Structure', image: img1, chapter: '08' },
   ];
 
   const panelSet3 = [
-    { id: 'p3-1', title: 'Chapter III: Void', image: comic3, chapter: '03' },
-    { id: 'p3-2', title: 'Chapter VI: Form', image: comic1, chapter: '06' },
-    { id: 'p3-3', title: 'Chapter IX: Light', image: comic2, chapter: '09' },
+    { id: 'p3-1', title: 'Chapter III: Void', image: img3, chapter: '03' },
+    { id: 'p3-2', title: 'Chapter VI: Form', image: img1, chapter: '06' },
+    { id: 'p3-3', title: 'Chapter IX: Light', image: img2, chapter: '09' },
   ];
 
   // Typewriter effect state for remaining words in Comic section heading
@@ -169,15 +186,17 @@ export default function ComicSection() {
       {/* Section Header */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
         <h2 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight">
-          <span className="inline-block text-white font-normal">
-            Comic&nbsp;
-          </span>
+          {headingLead && (
+            <span className="inline-block text-white font-normal">
+              {headingLead}&nbsp;
+            </span>
+          )}
           <span className="inline-block text-[#E6A800] font-light">
-            Panels
+            {headingAccent}
           </span>
         </h2>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-2xl mx-auto font-normal leading-relaxed">
-          Immerse yourself in cinematic storytelling, expressive comic panels, dynamic manga pages, and sequential artwork crafted with emotion and visual depth.
+          {subtitle}
         </p>
       </div>
 

@@ -43,6 +43,7 @@ export default function StudioSection() {
 
   const [studioConfig, setStudioConfig] = useState<{
     heading: string;
+    subtitle: string;
     storyParagraphs: string[];
     missionTitle: string;
     missionDesc: string;
@@ -54,6 +55,7 @@ export default function StudioSection() {
     buttonUrl: string;
   }>({
     heading: 'Origin & Craft',
+    subtitle: '',
     storyParagraphs: [
       'Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.',
       'Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.',
@@ -77,10 +79,13 @@ export default function StudioSection() {
       setStudioConfig((prev) => ({
         ...prev,
         heading: home.story_title || prev.heading,
+        subtitle: home.story_subtitle || '',
         storyParagraphs: home.story_content
-          ? home.story_content.split('\n\n').filter(Boolean)
-          : home.story_subtitle
-          ? [home.story_subtitle]
+          ? home.story_content
+              .replace(/\r\n/g, '\n')
+              .split(/\n+/)
+              .map((p) => p.trim())
+              .filter(Boolean)
           : prev.storyParagraphs,
         missionTitle: 'Mission',
         missionDesc: home.mission_statement || prev.missionDesc,
@@ -94,6 +99,9 @@ export default function StudioSection() {
         setMetrics(
           home.statistics_json.slice(0, 5).map((stat, idx) => {
             const { prefix, target, suffix } = parseStatValue(stat.value);
+            const thumbImgs = stat.image
+              ? [stat.image, stat.image, stat.image, stat.image, stat.image]
+              : [0, 1, 2, 3, 4].map((i) => decorativeThumbPool[(idx + i) % decorativeThumbPool.length]);
             return {
               id: `stat-${idx}`,
               label: stat.label,
@@ -101,9 +109,7 @@ export default function StudioSection() {
               prefix,
               suffix,
               current: 0,
-              thumbImgs: [0, 1, 2, 3, 4].map(
-                (i) => decorativeThumbPool[(idx + i) % decorativeThumbPool.length]
-              ),
+              thumbImgs,
             };
           })
         );
@@ -305,10 +311,15 @@ export default function StudioSection() {
       {/* 1. Top Editorial Story Grid */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-start pt-8">
         {/* Left Heading: Origin & Craft */}
-        <div className="md:col-span-5 md:pt-4 sticky top-28">
+        <div className="md:col-span-5 md:pt-4 sticky top-28 space-y-4">
           <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06] text-[#111115]">
             {studioConfig.heading}
           </h2>
+          {studioConfig.subtitle && (
+            <p className="font-inter text-base sm:text-lg text-[#55555c] font-normal leading-relaxed">
+              {studioConfig.subtitle}
+            </p>
+          )}
         </div>
 
         {/* Right Long Editorial Text */}
@@ -317,7 +328,14 @@ export default function StudioSection() {
           className="md:col-span-7 space-y-6 font-inter text-base sm:text-lg leading-relaxed transition-opacity duration-75 text-[#111115]"
         >
           {studioConfig.storyParagraphs.map((para, idx) => (
-            <p key={idx} className={idx === 0 ? 'text-[#111115] font-normal text-lg sm:text-xl leading-relaxed' : 'text-[#333339] font-normal leading-relaxed'}>
+            <p
+              key={idx}
+              className={
+                idx === 0
+                  ? 'text-[#111115] font-normal text-lg sm:text-xl leading-relaxed text-justify'
+                  : 'text-[#333339] font-normal leading-relaxed text-justify'
+              }
+            >
               {para}
             </p>
           ))}

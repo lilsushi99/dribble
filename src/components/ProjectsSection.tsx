@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Project } from '../types';
 import InteractiveHeading from './InteractiveHeading';
 import { adminApi } from '../admin/services/adminApi';
+import { useSettings } from '../context/SettingsContext';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -94,10 +95,25 @@ export default function ProjectsSection({
   onSelectProject,
   onViewAllProjects,
 }: ProjectsSectionProps) {
+  const { settings } = useSettings();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const [projects, setProjects] = useState<Project[]>(defaultProjectsSectionList);
+
+  const sectionHeading = settings?.homepage_projects_heading || 'Take a Look at Our Projects';
+  const sectionSubtitle =
+    settings?.homepage_projects_subtitle ||
+    "Discover Comic Art Studio's portfolio of published comic books, custom illustrations, manga series, graphic novels, and visual storytelling commissions.";
+  const displayCount = parseInt(settings?.homepage_projects_count || '6', 10) || 6;
+
+  const headingWords = sectionHeading.trim().split(/\s+/).filter(Boolean);
+  // Preserve the original two-tone treatment: everything up to the last two words in
+  // white, the final two words in accent color (matches "Our Projects" being the
+  // accented phrase in the original hardcoded heading).
+  const accentWordCount = Math.min(2, headingWords.length);
+  const leadWords = headingWords.slice(0, headingWords.length - accentWordCount).join(' ');
+  const accentWords = headingWords.slice(headingWords.length - accentWordCount).join(' ');
 
   useEffect(() => {
     let ticking = false;
@@ -137,7 +153,7 @@ export default function ProjectsSection({
         const fetched = await adminApi.getProjects();
         if (fetched && fetched.length > 0) {
           const published = fetched.filter((p) => p.is_published);
-          const mapped: Project[] = published.slice(0, 6).map((p, idx) => ({
+          const mapped: Project[] = published.slice(0, displayCount).map((p, idx) => ({
             id: String(p.id),
             title: p.title,
             client: p.client || 'Client',
@@ -161,7 +177,7 @@ export default function ProjectsSection({
       }
     }
     fetchFeaturedProjects();
-  }, []);
+  }, [displayCount]);
 
   return (
     <section
@@ -173,13 +189,13 @@ export default function ProjectsSection({
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-16">
         <InteractiveHeading
           as="h2"
-          firstWord="Take a Look at"
-          yellowText="Our Projects"
+          firstWord={leadWords}
+          yellowText={accentWords}
           isIlluminated={scrollProgress > 0.1}
           className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
         />
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-xl mx-auto font-normal leading-relaxed">
-          Discover Comic Art Studio's portfolio of published comic books, custom illustrations, manga series, graphic novels, and visual storytelling commissions.
+          {sectionSubtitle}
         </p>
       </div>
 
@@ -257,7 +273,7 @@ export default function ProjectsSection({
                   <h3 className="font-outfit text-xl sm:text-2xl text-[#f3f3f3] font-light group-hover:text-white transition-colors">
                     {proj.title}
                   </h3>
-                  <p className="font-inter text-xs sm:text-sm text-[#9a9a9e] opacity-0 group-hover:opacity-100 transition-opacity duration-300 line-clamp-1">
+                  <p className="font-inter text-xs sm:text-sm text-[#9a9a9e] opacity-90 transition-opacity duration-300 line-clamp-1">
                     {proj.description}
                   </p>
                 </div>

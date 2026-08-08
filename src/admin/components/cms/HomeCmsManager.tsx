@@ -41,11 +41,41 @@ const defaultFaqs: FaqItem[] = [
   },
 ];
 
+// Fields with no column in homepage_content live in the generic settings store instead
+// (same mechanism already used for contact_* fields) rather than requiring a schema change.
+interface SiteFields {
+  heroBackgroundImage: string;
+  comicPanelHeading: string;
+  comicPanelSubtitle: string;
+  comicPanelImage1: string;
+  comicPanelImage2: string;
+  comicPanelImage3: string;
+  projectsHeading: string;
+  projectsSubtitle: string;
+  projectsCount: string;
+  faqHeading: string;
+  faqSubtitle: string;
+}
+
+const emptySiteFields: SiteFields = {
+  heroBackgroundImage: '',
+  comicPanelHeading: '',
+  comicPanelSubtitle: '',
+  comicPanelImage1: '',
+  comicPanelImage2: '',
+  comicPanelImage3: '',
+  projectsHeading: '',
+  projectsSubtitle: '',
+  projectsCount: '6',
+  faqHeading: '',
+  faqSubtitle: '',
+};
+
 export const HomeCmsManager: React.FC = () => {
   const { settings, updateSettings } = useSettings();
 
   const [home, setHome] = useState<HomepageContent>(defaultHomepageData);
-  const [heroBackgroundImage, setHeroBackgroundImage] = useState('');
+  const [site, setSite] = useState<SiteFields>(emptySiteFields);
   const [faqs, setFaqs] = useState<FaqItem[]>(defaultFaqs);
 
   const [loading, setLoading] = useState(true);
@@ -54,11 +84,12 @@ export const HomeCmsManager: React.FC = () => {
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     hero: true,
-    story: true,
-    stats: true,
-    marquee: true,
-    faq: true,
-    cta: true,
+    comic: false,
+    marquee: false,
+    projects: false,
+    studio: false,
+    faq: false,
+    contact: false,
   });
 
   const toggleSection = (key: string) => {
@@ -87,14 +118,22 @@ export const HomeCmsManager: React.FC = () => {
     loadHome();
   }, []);
 
-  // Hero background image and FAQ list live in the generic settings store
-  // (there is no dedicated column for them in homepage_content), same pattern
-  // already used for contact_artist_image etc.
   useEffect(() => {
-    if (settings?.hero_background_image !== undefined) {
-      setHeroBackgroundImage(settings.hero_background_image);
-    }
-    if (settings?.homepage_faqs) {
+    if (!settings) return;
+    setSite({
+      heroBackgroundImage: settings.hero_background_image || '',
+      comicPanelHeading: settings.comic_panel_heading || '',
+      comicPanelSubtitle: settings.comic_panel_subtitle || '',
+      comicPanelImage1: settings.comic_panel_image_1 || '',
+      comicPanelImage2: settings.comic_panel_image_2 || '',
+      comicPanelImage3: settings.comic_panel_image_3 || '',
+      projectsHeading: settings.homepage_projects_heading || '',
+      projectsSubtitle: settings.homepage_projects_subtitle || '',
+      projectsCount: settings.homepage_projects_count || '6',
+      faqHeading: settings.homepage_faq_heading || '',
+      faqSubtitle: settings.homepage_faq_subtitle || '',
+    });
+    if (settings.homepage_faqs) {
       try {
         const parsed = JSON.parse(settings.homepage_faqs);
         if (Array.isArray(parsed) && parsed.length > 0) setFaqs(parsed);
@@ -113,7 +152,17 @@ export const HomeCmsManager: React.FC = () => {
       setHome(updated);
       await updateSettings(
         {
-          hero_background_image: heroBackgroundImage,
+          hero_background_image: site.heroBackgroundImage,
+          comic_panel_heading: site.comicPanelHeading,
+          comic_panel_subtitle: site.comicPanelSubtitle,
+          comic_panel_image_1: site.comicPanelImage1,
+          comic_panel_image_2: site.comicPanelImage2,
+          comic_panel_image_3: site.comicPanelImage3,
+          homepage_projects_heading: site.projectsHeading,
+          homepage_projects_subtitle: site.projectsSubtitle,
+          homepage_projects_count: site.projectsCount,
+          homepage_faq_heading: site.faqHeading,
+          homepage_faq_subtitle: site.faqSubtitle,
           homepage_faqs: JSON.stringify(faqs),
         },
         'homepage'
@@ -129,7 +178,7 @@ export const HomeCmsManager: React.FC = () => {
 
   // Statistics Handlers
   const handleAddStat = () => {
-    const newStat: HomepageStat = { label: 'New Metric', value: '0' };
+    const newStat: HomepageStat = { label: 'New Metric', value: '0', image: '' };
     setHome((prev) => ({ ...prev, statistics_json: [...(prev.statistics_json || []), newStat] }));
   };
 
@@ -199,6 +248,39 @@ export const HomeCmsManager: React.FC = () => {
     setFaqs((prev) => prev.map((f) => (f.id === id ? { ...f, [field]: val } : f)));
   };
 
+  const SectionHeader = ({
+    id,
+    number,
+    title,
+    count,
+  }: {
+    id: string;
+    number: string;
+    title: string;
+    count?: number;
+  }) => (
+    <button
+      type="button"
+      onClick={() => toggleSection(id)}
+      className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
+    >
+      <span className="flex items-center gap-2">
+        <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">
+          {number}
+        </span>
+        <span>
+          {title}
+          {count !== undefined ? ` (${count})` : ''}
+        </span>
+      </span>
+      {openSections[id] ? (
+        <ChevronUp className="w-4 h-4 text-slate-400" />
+      ) : (
+        <ChevronDown className="w-4 h-4 text-slate-400" />
+      )}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
@@ -210,7 +292,7 @@ export const HomeCmsManager: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Homepage CMS</h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-              Edit hero, story, statistics, marquee, FAQ, and CTA content. Saved directly to MySQL.
+              Sections below follow the actual homepage order, top to bottom. Saved directly to MySQL.
             </p>
           </div>
         </div>
@@ -234,24 +316,13 @@ export const HomeCmsManager: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4">
           {/* SECTION 1: HERO */}
           <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('hero')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">01</span>
-                <span>Hero Section</span>
-              </span>
-              {openSections.hero ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
-
+            <SectionHeader id="hero" number="01" title="Hero" />
             {openSections.hero && (
               <div className="p-5 space-y-4 text-xs">
                 <DeviceImageUpload
                   label="Hero Background Image"
-                  value={heroBackgroundImage}
-                  onChange={setHeroBackgroundImage}
+                  value={site.heroBackgroundImage}
+                  onChange={(url) => setSite((prev) => ({ ...prev, heroBackgroundImage: url }))}
                   category="homepage"
                 />
 
@@ -279,28 +350,54 @@ export const HomeCmsManager: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Primary Button Text</label>
-                    <Input
-                      type="text"
-                      value={home.hero_cta_primary_text || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_primary_text: e.target.value }))}
-                      placeholder="Chat With Us"
-                    />
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      This button always opens the live chat widget; only its label is editable here.
+                  <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="font-semibold text-slate-700 dark:text-zinc-300">Button 1 (Primary)</div>
+                    <div>
+                      <label className="block text-slate-600 dark:text-zinc-400 mb-1">Text</label>
+                      <Input
+                        type="text"
+                        value={home.hero_cta_primary_text || ''}
+                        onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_primary_text: e.target.value }))}
+                        placeholder="Chat With Us"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-600 dark:text-zinc-400 mb-1">Link / URL</label>
+                      <Input
+                        type="text"
+                        value={home.hero_cta_primary_url || ''}
+                        onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_primary_url: e.target.value }))}
+                        placeholder="Leave empty or '#' to open the chat widget"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Empty or "#" opens the live chat widget (original behavior). An internal path
+                      (e.g. "/projects") navigates there. A full https:// URL opens in a new tab —
+                      use this for a backlink to another site.
                     </p>
                   </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Secondary Button Text</label>
-                    <Input
-                      type="text"
-                      value={home.hero_cta_secondary_text || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_secondary_text: e.target.value }))}
-                      placeholder="View Portfolio"
-                    />
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      This button always navigates to the Projects page; only its label is editable here.
+                  <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="font-semibold text-slate-700 dark:text-zinc-300">Button 2 (Secondary)</div>
+                    <div>
+                      <label className="block text-slate-600 dark:text-zinc-400 mb-1">Text</label>
+                      <Input
+                        type="text"
+                        value={home.hero_cta_secondary_text || ''}
+                        onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_secondary_text: e.target.value }))}
+                        placeholder="View Portfolio"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-600 dark:text-zinc-400 mb-1">Link / URL</label>
+                      <Input
+                        type="text"
+                        value={home.hero_cta_secondary_url || ''}
+                        onChange={(e) => setHome((prev) => ({ ...prev, hero_cta_secondary_url: e.target.value }))}
+                        placeholder="Leave empty or '#' to go to /projects"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Empty or "#" goes to the Projects page (original behavior). Same URL rules as Button 1.
                     </p>
                   </div>
                 </div>
@@ -308,142 +405,64 @@ export const HomeCmsManager: React.FC = () => {
             )}
           </div>
 
-          {/* SECTION 2: STORY / MISSION / VISION / PHILOSOPHY */}
+          {/* SECTION 2: COMIC PANEL */}
           <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('story')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">02</span>
-                <span>Story, Mission, Vision & Philosophy</span>
-              </span>
-              {openSections.story ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
-
-            {openSections.story && (
+            <SectionHeader id="comic" number="02" title="Comic Panel" />
+            {openSections.comic && (
               <div className="p-5 space-y-4 text-xs">
-                <p className="text-slate-500 dark:text-zinc-400">
-                  This content also powers the "Origin & Craft" preview section on the homepage
-                  (heading, story, mission/vision/philosophy cards, and statistics).
-                </p>
                 <div>
-                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Title</label>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Heading</label>
                   <Input
                     type="text"
-                    value={home.story_title || ''}
-                    onChange={(e) => setHome((prev) => ({ ...prev, story_title: e.target.value }))}
+                    value={site.comicPanelHeading}
+                    onChange={(e) => setSite((prev) => ({ ...prev, comicPanelHeading: e.target.value }))}
+                    placeholder="Comic Panels"
                   />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    The final word is automatically rendered in the accent color.
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Subtitle</label>
-                  <Input
-                    type="text"
-                    value={home.story_subtitle || ''}
-                    onChange={(e) => setHome((prev) => ({ ...prev, story_subtitle: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Content</label>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Subtitle</label>
                   <Textarea
-                    rows={4}
-                    value={home.story_content || ''}
-                    onChange={(e) => setHome((prev) => ({ ...prev, story_content: e.target.value }))}
+                    rows={2}
+                    value={site.comicPanelSubtitle}
+                    onChange={(e) => setSite((prev) => ({ ...prev, comicPanelSubtitle: e.target.value }))}
+                    placeholder="Immerse yourself in cinematic storytelling..."
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Mission Statement</label>
-                    <Textarea
-                      rows={3}
-                      value={home.mission_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, mission_statement: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Vision Statement</label>
-                    <Textarea
-                      rows={3}
-                      value={home.vision_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, vision_statement: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Philosophy Statement</label>
-                    <Textarea
-                      rows={3}
-                      value={home.philosophy_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, philosophy_statement: e.target.value }))}
-                    />
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <DeviceImageUpload
+                    label="Comic Panel Image 1"
+                    value={site.comicPanelImage1}
+                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage1: url }))}
+                    category="comic-panels"
+                  />
+                  <DeviceImageUpload
+                    label="Comic Panel Image 2"
+                    value={site.comicPanelImage2}
+                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage2: url }))}
+                    category="comic-panels"
+                  />
+                  <DeviceImageUpload
+                    label="Comic Panel Image 3"
+                    value={site.comicPanelImage3}
+                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage3: url }))}
+                    category="comic-panels"
+                  />
                 </div>
+                <p className="text-[11px] text-slate-400">
+                  These 3 images rotate across the three animated columns exactly as before — only the
+                  image source changed from bundled assets to your uploads. The scroll/loop animation
+                  itself is untouched.
+                </p>
               </div>
             )}
           </div>
 
-          {/* SECTION 3: STATISTICS */}
+          {/* SECTION 3: MARQUEE */}
           <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('stats')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">03</span>
-                <span>Statistics ({(home.statistics_json || []).length})</span>
-              </span>
-              {openSections.stats ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
-
-            {openSections.stats && (
-              <div className="p-5 space-y-3 text-xs">
-                {(home.statistics_json || []).map((stat, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
-                    <Input
-                      type="text"
-                      value={stat.label}
-                      onChange={(e) => handleUpdateStat(index, 'label', e.target.value)}
-                      placeholder="Label"
-                      className="flex-1"
-                    />
-                    <Input
-                      type="text"
-                      value={stat.value}
-                      onChange={(e) => handleUpdateStat(index, 'value', e.target.value)}
-                      placeholder="Value"
-                      className="w-24"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStat(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddStat}>
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Statistic
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* SECTION 4: MARQUEE */}
-          <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('marquee')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">04</span>
-                <span>Marquee Ribbon ({(home.marquee_items_json || []).length})</span>
-              </span>
-              {openSections.marquee ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
-
+            <SectionHeader id="marquee" number="03" title="Marquee Ribbon" count={(home.marquee_items_json || []).length} />
             {openSections.marquee && (
               <div className="p-5 space-y-3 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -472,79 +491,236 @@ export const HomeCmsManager: React.FC = () => {
             )}
           </div>
 
-          {/* SECTION 5: FAQ */}
+          {/* SECTION 4: PROJECTS (homepage preview) */}
           <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('faq')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">05</span>
-                <span>FAQ ({faqs.length})</span>
-              </span>
-              {openSections.faq ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
-
-            {openSections.faq && (
-              <div className="p-5 space-y-3 text-xs">
-                {faqs.map((faq, index) => (
-                  <div key={faq.id} className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-zinc-100">FAQ #{index + 1}</span>
-                      <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => handleMoveFaq(index, 'up')} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button type="button" onClick={() => handleMoveFaq(index, 'down')} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
-                        <button type="button" onClick={() => handleRemoveFaq(faq.id)} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg cursor-pointer">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <Input
-                      type="text"
-                      value={faq.question}
-                      onChange={(e) => handleUpdateFaq(faq.id, 'question', e.target.value)}
-                      placeholder="Question"
-                    />
-                    <Textarea
-                      rows={2}
-                      value={faq.answer}
-                      onChange={(e) => handleUpdateFaq(faq.id, 'answer', e.target.value)}
-                      placeholder="Answer"
-                    />
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddFaq}>
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add FAQ
-                </Button>
+            <SectionHeader id="projects" number="04" title="Projects" />
+            {openSections.projects && (
+              <div className="p-5 space-y-4 text-xs">
+                <p className="text-slate-500 dark:text-zinc-400">
+                  This only controls the heading, subtitle, and how many projects show on the homepage.
+                  The projects themselves come from Content Management → Project — add or edit them
+                  there and they'll automatically appear here.
+                </p>
+                <div>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Heading</label>
+                  <Input
+                    type="text"
+                    value={site.projectsHeading}
+                    onChange={(e) => setSite((prev) => ({ ...prev, projectsHeading: e.target.value }))}
+                    placeholder="Take a Look at Our Projects"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Subtitle</label>
+                  <Textarea
+                    rows={2}
+                    value={site.projectsSubtitle}
+                    onChange={(e) => setSite((prev) => ({ ...prev, projectsSubtitle: e.target.value }))}
+                    placeholder="Discover Comic Art Studio's portfolio..."
+                  />
+                </div>
+                <div className="max-w-xs">
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">
+                    Number of Projects to Display
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={site.projectsCount}
+                    onChange={(e) => setSite((prev) => ({ ...prev, projectsCount: e.target.value }))}
+                  />
+                </div>
               </div>
             )}
           </div>
 
-          {/* SECTION 6: CTA BANNER FIELDS (reserved for future use) */}
+          {/* SECTION 5: STUDIO PREVIEW / STORY / MISSION / VISION / PHILOSOPHY / STATISTICS */}
           <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
-            <button
-              type="button"
-              onClick={() => toggleSection('cta')}
-              className="w-full flex items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-950/50 border-b border-slate-200/60 dark:border-zinc-800 text-left font-bold text-slate-900 dark:text-zinc-100 text-sm hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">06</span>
-                <span>CTA Banner Content</span>
-              </span>
-              {openSections.cta ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </button>
+            <SectionHeader id="studio" number="05" title="Studio / Statistics" />
+            {openSections.studio && (
+              <div className="p-5 space-y-6 text-xs">
+                <p className="text-slate-500 dark:text-zinc-400">
+                  This is the "Origin & Craft" studio preview section further down the homepage.
+                </p>
 
-            {openSections.cta && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Title</label>
+                    <Input
+                      type="text"
+                      value={home.story_title || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, story_title: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Story Subtitle</label>
+                    <Input
+                      type="text"
+                      value={home.story_subtitle || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, story_subtitle: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">
+                      Story Content (paragraphs)
+                    </label>
+                    <Textarea
+                      rows={6}
+                      value={home.story_content || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, story_content: e.target.value }))}
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Press Enter once between paragraphs. Each line becomes its own justified paragraph
+                      on the homepage.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Mission Statement</label>
+                    <Textarea
+                      rows={3}
+                      value={home.mission_statement || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, mission_statement: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Vision Statement</label>
+                    <Textarea
+                      rows={3}
+                      value={home.vision_statement || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, vision_statement: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Philosophy Statement</label>
+                    <Textarea
+                      rows={3}
+                      value={home.philosophy_statement || ''}
+                      onChange={(e) => setHome((prev) => ({ ...prev, philosophy_statement: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-3">
+                  <div className="font-bold text-slate-700 dark:text-zinc-300">
+                    Statistics ({(home.statistics_json || []).length})
+                  </div>
+                  {(home.statistics_json || []).map((stat, index) => (
+                    <div key={index} className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 space-y-2">
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="text"
+                          value={stat.label}
+                          onChange={(e) => handleUpdateStat(index, 'label', e.target.value)}
+                          placeholder="Label"
+                          className="flex-1"
+                        />
+                        <Input
+                          type="text"
+                          value={stat.value}
+                          onChange={(e) => handleUpdateStat(index, 'value', e.target.value)}
+                          placeholder="Value (e.g. 148+, 99.8%, $1M)"
+                          className="w-40"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStat(index)}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <DeviceImageUpload
+                        label="Popup Image"
+                        value={stat.image || ''}
+                        onChange={(url) => handleUpdateStat(index, 'image', url)}
+                        category="studio"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddStat}>
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Statistic
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 6: FAQ */}
+          <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+            <SectionHeader id="faq" number="06" title="FAQ" count={faqs.length} />
+            {openSections.faq && (
+              <div className="p-5 space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Heading</label>
+                  <Input
+                    type="text"
+                    value={site.faqHeading}
+                    onChange={(e) => setSite((prev) => ({ ...prev, faqHeading: e.target.value }))}
+                    placeholder="Frequently Asked Questions"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Subtitle</label>
+                  <Textarea
+                    rows={2}
+                    value={site.faqSubtitle}
+                    onChange={(e) => setSite((prev) => ({ ...prev, faqSubtitle: e.target.value }))}
+                    placeholder="Clear answers regarding our engagement methodology..."
+                  />
+                </div>
+
+                <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                  {faqs.map((faq, index) => (
+                    <div key={faq.id} className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-900 dark:text-zinc-100">FAQ #{index + 1}</span>
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => handleMoveFaq(index, 'up')} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button type="button" onClick={() => handleMoveFaq(index, 'down')} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button type="button" onClick={() => handleRemoveFaq(faq.id)} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg cursor-pointer">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <Input
+                        type="text"
+                        value={faq.question}
+                        onChange={(e) => handleUpdateFaq(faq.id, 'question', e.target.value)}
+                        placeholder="Question"
+                      />
+                      <Textarea
+                        rows={2}
+                        value={faq.answer}
+                        onChange={(e) => handleUpdateFaq(faq.id, 'answer', e.target.value)}
+                        placeholder="Answer"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddFaq}>
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add FAQ
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 7: CONTACT / CTA */}
+          <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+            <SectionHeader id="contact" number="07" title="Contact / CTA" />
+            {openSections.contact && (
               <div className="p-5 space-y-4 text-xs">
                 <p className="text-slate-500 dark:text-zinc-400">
-                  Note: the homepage currently uses the Contact form (Forms → Contact Page Editor) as its closing
-                  call-to-action, so this content is not yet rendered anywhere on the page. It is saved to the
-                  database and available for a future CTA banner section without requiring further backend work.
+                  The homepage closes with the Contact form, which is already fully editable from
+                  Forms → Contact Page Editor — no changes made here. The fields below save to the
+                  database for a possible future CTA banner, but nothing on the page displays them yet.
                 </p>
                 <div>
                   <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Heading</label>

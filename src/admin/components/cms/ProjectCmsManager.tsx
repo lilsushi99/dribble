@@ -4,6 +4,18 @@ import { adminApi } from '../../services/adminApi';
 import { ProjectCMSItem } from '../../types/admin.types';
 import { FolderKanban, Plus, Edit2, Trash2, X, Eye, EyeOff, Tag, Sparkles, Save, Type, Link, MessageSquare } from 'lucide-react';
 
+// Matches the box shapes/proportions from the original hand-built homepage showcase,
+// so picking a preset here reproduces the intended asymmetrical "Lego block" composition
+// instead of every project defaulting to the same uniform box.
+const PROJECT_LAYOUT_PRESETS = [
+  { id: 'balanced', label: 'Balanced (default, uniform)', gridSpan: 'col-span-12 md:col-span-6', aspectRatio: 'aspect-[4/3]' },
+  { id: 'wide-short', label: 'Wide & Short', gridSpan: 'col-span-12 md:col-span-7', aspectRatio: 'aspect-[4/3]' },
+  { id: 'tall-narrow', label: 'Tall & Narrow', gridSpan: 'col-span-12 md:col-span-5', aspectRatio: 'aspect-[3/4]' },
+  { id: 'square', label: 'Square, Medium', gridSpan: 'col-span-12 md:col-span-4', aspectRatio: 'aspect-[1/1]' },
+  { id: 'extra-wide', label: 'Extra Wide', gridSpan: 'col-span-12 md:col-span-8', aspectRatio: 'aspect-[16/9]' },
+  { id: 'wide-tall', label: 'Wide & Tall', gridSpan: 'col-span-12 md:col-span-7', aspectRatio: 'aspect-[16/10]' },
+];
+
 export const ProjectCmsManager: React.FC = () => {
   const [projects, setProjects] = useState<ProjectCMSItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -491,6 +503,37 @@ export const ProjectCmsManager: React.FC = () => {
                       onChange={(e) => setEditingProject((prev) => ({ ...prev, year: e.target.value }))}
                       placeholder="2026"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Homepage Layout Size</label>
+                    <select
+                      value={
+                        PROJECT_LAYOUT_PRESETS.find(
+                          (p) => p.gridSpan === editingProject.grid_span && p.aspectRatio === editingProject.aspect_ratio
+                        )?.id || 'balanced'
+                      }
+                      onChange={(e) => {
+                        const preset = PROJECT_LAYOUT_PRESETS.find((p) => p.id === e.target.value);
+                        if (preset) {
+                          setEditingProject((prev) => ({
+                            ...prev,
+                            grid_span: preset.gridSpan,
+                            aspect_ratio: preset.aspectRatio,
+                          }));
+                        }
+                      }}
+                      className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-slate-900 dark:text-zinc-100"
+                    >
+                      {PROJECT_LAYOUT_PRESETS.map((preset) => (
+                        <option key={preset.id} value={preset.id}>
+                          {preset.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Controls this project's box shape in the homepage masonry grid. Vary these across
+                      projects for the intended asymmetrical "Lego block" composition.
+                    </p>
                   </div>
                 </div>
 

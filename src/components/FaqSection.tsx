@@ -106,6 +106,17 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
     }
   }
 
+  const heading = settings?.homepage_faq_heading || 'Frequently Asked Questions';
+  const subtitle =
+    settings?.homepage_faq_subtitle ||
+    'Clear answers regarding our engagement methodology, timelines, and technical standards.';
+  const headingWords = heading.trim().split(/\s+/).filter(Boolean);
+  // Preserve the original two-tone split ("Frequently" illuminated white / "Asked Questions" accent)
+  // by keeping the last two words as the accent phrase when there are enough words.
+  const accentCount = headingWords.length > 2 ? 2 : Math.max(headingWords.length - 1, 0);
+  const leadText = headingWords.slice(0, headingWords.length - accentCount).join(' ');
+  const accentText = headingWords.slice(headingWords.length - accentCount).join(' ');
+
   const toggleFaq = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));
   };
@@ -123,19 +134,21 @@ export default function FaqSection({ onOpenBookCall }: FaqSectionProps) {
           ref={headingRef}
           className="font-outfit text-3xl sm:text-5xl md:text-6xl font-light text-[#f3f3f3] tracking-tight"
         >
-          <span
-            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
-            style={{
-              opacity: isIlluminated ? 1 : 0.35,
-              filter: isIlluminated ? 'brightness(1)' : 'brightness(0.35)',
-            }}
-          >
-            Frequently&nbsp;
-          </span>
-          <span className="text-[#E6A800]">Asked Questions</span>
+          {leadText && (
+            <span
+              className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
+              style={{
+                opacity: isIlluminated ? 1 : 0.35,
+                filter: isIlluminated ? 'brightness(1)' : 'brightness(0.35)',
+              }}
+            >
+              {leadText}&nbsp;
+            </span>
+          )}
+          <span className="text-[#E6A800]">{accentText}</span>
         </h2>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] max-w-xl mx-auto leading-relaxed">
-          Clear answers regarding our engagement methodology, timelines, and technical standards.
+          {subtitle}
         </p>
       </div>
 

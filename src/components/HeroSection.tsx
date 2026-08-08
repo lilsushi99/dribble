@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import heroNebulaImg from '../assets/images/hero_nebula_bg_1785513124347.jpg';
 import InteractiveHeading from './InteractiveHeading';
 import { useSettings } from '../context/SettingsContext';
@@ -23,6 +24,7 @@ export default function HeroSection({
   homeContent,
 }: HeroSectionProps) {
   const { settings } = useSettings();
+  const navigate = useNavigate();
   const [isIlluminated, setIsIlluminated] = useState(false);
   const headingRef = useRef<HTMLDivElement | null>(null);
   const [content, setContent] = useState<HomepageContent>(homeContent || defaultHomepageData);
@@ -69,6 +71,39 @@ export default function HeroSection({
 
   const heroBackgroundImage = settings?.hero_background_image || bgImage || heroNebulaImg;
 
+  // The admin can now set a real URL/action per button. An empty value or a lone '#'
+  // preserves the original default behavior (chat widget for primary, projects page
+  // for secondary) so existing sites don't change unless the admin explicitly sets a URL.
+  const handlePrimaryClick = () => {
+    const url = (content.hero_cta_primary_url || '').trim();
+    if (!url || url === '#') {
+      const api = window.Tawk_API as any;
+      if (api?.maximize) api.maximize();
+      else if (api?.toggle) api.toggle();
+      else if (api?.popup) api.popup();
+      else onOpenBookCall();
+      return;
+    }
+    if (/^https?:\/\//i.test(url)) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(url);
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    const url = (content.hero_cta_secondary_url || '').trim();
+    if (!url || url === '#') {
+      onViewProjects();
+      return;
+    }
+    if (/^https?:\/\//i.test(url)) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(url);
+    }
+  };
+
   return (
     <section
       id="section-home"
@@ -112,18 +147,7 @@ export default function HeroSection({
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 pt-4">
           {/* Primary Button: Chat With Us */}
           <button
-            onClick={() => {
-              const api = window.Tawk_API as any;
-              if (api?.maximize) {
-                api.maximize();
-              } else if (api?.toggle) {
-                api.toggle();
-              } else if (api?.popup) {
-                api.popup();
-              } else {
-                onOpenBookCall();
-              }
-            }}
+            onClick={handlePrimaryClick}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#0097FF] hover:bg-[#0082e6] text-white rounded-full px-7 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer shadow-lg shadow-[#0097FF]/20"
           >
             <span>{content.hero_cta_primary_text || 'Chat With Us'}</span>
@@ -140,7 +164,7 @@ export default function HeroSection({
 
           {/* Secondary Button: View Portfolio -> /projects */}
           <button
-            onClick={onViewProjects}
+            onClick={handleSecondaryClick}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border border-white/20 hover:border-white/50 bg-transparent hover:bg-white/5 text-white rounded-full px-7 py-3.5 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 active:scale-98 cursor-pointer"
           >
             <span>{content.hero_cta_secondary_text || 'View Portfolio'}</span>
