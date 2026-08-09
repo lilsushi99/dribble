@@ -625,7 +625,7 @@ export const HomeCmsManager: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-200 dark:border-zinc-800">
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Mission Statement</label>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 1 ("Discover")</label>
                     <Textarea
                       rows={3}
                       value={home.mission_statement || ''}
@@ -633,7 +633,7 @@ export const HomeCmsManager: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Vision Statement</label>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 2 ("Design")</label>
                     <Textarea
                       rows={3}
                       value={home.vision_statement || ''}
@@ -641,7 +641,7 @@ export const HomeCmsManager: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Philosophy Statement</label>
+                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 3 ("Create")</label>
                     <Textarea
                       rows={3}
                       value={home.philosophy_statement || ''}

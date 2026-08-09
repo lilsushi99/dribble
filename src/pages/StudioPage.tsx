@@ -205,19 +205,35 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
         </div>
         <div className="md:col-span-8 space-y-6 font-inter text-base sm:text-lg text-[#9a9a9e] leading-relaxed">
           {studioData?.story_content ? (
-            <div dangerouslySetInnerHTML={{ __html: studioData.story_content }} />
+            studioData.story_content
+              .replace(/\r\n/g, '\n')
+              .split(/\n+/)
+              .map((p) => p.trim())
+              .filter(Boolean)
+              .map((para, idx) => (
+                <p
+                  key={idx}
+                  className={
+                    idx === 0
+                      ? 'text-white font-medium text-lg sm:text-xl leading-relaxed text-justify'
+                      : 'leading-relaxed text-justify'
+                  }
+                >
+                  {para}
+                </p>
+              ))
           ) : (
             <>
-              <p className="text-white font-medium text-lg sm:text-xl leading-relaxed">
+              <p className="text-white font-medium text-lg sm:text-xl leading-relaxed text-justify">
                 Founded in 2020, Comic Art Studio emerged from a deep passion for sequential art, character design, and compelling visual narrative.
               </p>
-              <p>
+              <p className="text-justify">
                 Our team of artists and storytellers approaches every comic page, graphic novel, and concept artwork with uncompromising craftsmanship and dedication.
               </p>
-              <p>
+              <p className="text-justify">
                 We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.
               </p>
-              <p>
+              <p className="text-justify">
                 Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.
               </p>
             </>

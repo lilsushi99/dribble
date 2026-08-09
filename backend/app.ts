@@ -6,6 +6,7 @@ import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { SeoService } from './services/seo.service';
 import { isDbConnected, testDatabaseConnection } from './config/database';
+import { UPLOAD_ROOT } from './config/upload';
 
 const app = express();
 
@@ -15,11 +16,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static file serving for file uploads
-const uploadsPath = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath, { recursive: true });
+if (!fs.existsSync(UPLOAD_ROOT)) {
+  fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
 }
-app.use('/uploads', express.static(uploadsPath));
+app.use('/uploads', express.static(UPLOAD_ROOT));
 
 // Serve sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
@@ -59,6 +59,13 @@ app.get('/api/health', async (req, res) => {
       connected: dbConnected,
       mode: dbConnected ? 'mysql' : 'in-memory fallback (changes will NOT be saved permanently)',
       missing_env_vars: missingEnvVars.length > 0 ? missingEnvVars : undefined,
+    },
+    uploads: {
+      path: UPLOAD_ROOT,
+      configured_persistent: !!process.env.UPLOAD_DIR,
+      note: process.env.UPLOAD_DIR
+        ? 'UPLOAD_DIR is set — uploads should survive redeploys if this path is outside the deployed code directory.'
+        : 'UPLOAD_DIR is not set — uploads are stored inside the deployed code directory and may be wiped on redeploy.',
     },
   });
 });

@@ -62,12 +62,12 @@ export default function StudioSection() {
       'We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.',
       'Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.',
     ],
-    missionTitle: 'Eliminate Noise',
-    missionDesc: 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.',
-    visionTitle: 'Permanence & Inertia',
-    visionDesc: 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.',
-    philosophyTitle: 'Sculptural Rigor',
-    philosophyDesc: 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.',
+    missionTitle: 'Discover',
+    missionDesc: 'We start by understanding your goals, audience, and the story you need told, grounding every decision in a clear creative brief.',
+    visionTitle: 'Design',
+    visionDesc: 'Concepts, character studies, and layout exploration follow, refined through iteration until the direction feels right.',
+    philosophyTitle: 'Create',
+    philosophyDesc: 'Full production begins: inking, coloring, and page assembly, crafted with the same discipline at every stage.',
     buttonText: 'View Studio',
     buttonUrl: '/studio',
   });
@@ -87,11 +87,11 @@ export default function StudioSection() {
               .map((p) => p.trim())
               .filter(Boolean)
           : prev.storyParagraphs,
-        missionTitle: 'Mission',
+        missionTitle: 'Discover',
         missionDesc: home.mission_statement || prev.missionDesc,
-        visionTitle: 'Vision',
+        visionTitle: 'Design',
         visionDesc: home.vision_statement || prev.visionDesc,
-        philosophyTitle: 'Philosophy',
+        philosophyTitle: 'Create',
         philosophyDesc: home.philosophy_statement || prev.philosophyDesc,
       }));
 
@@ -312,7 +312,7 @@ export default function StudioSection() {
       {/* 1. Top Editorial Story Grid */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-start pt-8">
         {/* Left Heading: Origin & Craft */}
-        <div className="md:col-span-5 md:pt-4 sticky top-28 space-y-4">
+        <div className="md:col-span-5 md:pt-4 md:sticky md:top-28 space-y-4">
           <h2 className="font-outfit text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.06] text-[#111115]">
             {studioConfig.heading}
           </h2>
@@ -343,23 +343,25 @@ export default function StudioSection() {
         </div>
       </div>
 
-      {/* 2. Mission / Vision / Philosophy Cards directly below Story */}
+      {/* 2. Our Process — sequential timeline (previously Mission/Vision/Philosophy cards) */}
       <div className="max-w-7xl mx-auto w-full pt-12 border-t border-black/15">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          {valueCards.map((card) => (
-            <div
-              key={card.id}
-              className="bg-[#f8f8fa] border border-black/10 p-8 rounded-2xl space-y-4 hover:border-black/25 transition-all shadow-sm group"
-            >
-              <div className="text-xs font-inter uppercase tracking-widest text-[#0097FF] font-semibold">
-                {card.number}
+        <h3 className="font-outfit text-2xl sm:text-3xl font-light text-[#111115] tracking-tight mb-10">
+          Our <span className="text-[#E6A800]">Process</span>
+        </h3>
+        <div className="relative flex flex-col md:flex-row md:items-start gap-10 md:gap-6">
+          <div className="hidden md:block absolute top-[13px] left-[6%] right-[6%] h-px bg-black/15" />
+          <div className="md:hidden absolute top-1 bottom-1 left-[13px] w-px bg-black/15" />
+          {valueCards.map((card, idx) => (
+            <div key={card.id} className="relative flex md:flex-col items-start gap-4 md:gap-6 flex-1 min-w-0">
+              <div className="relative z-10 w-7 h-7 rounded-full border border-black/25 bg-[#f8f8fa] flex items-center justify-center flex-shrink-0">
+                <span className="font-inter text-[11px] text-[#E6A800]">{idx + 1}</span>
               </div>
-              <h3 className="font-outfit text-2xl text-[#111115] font-light group-hover:text-black transition-colors">
-                {card.title}
-              </h3>
-              <p className="font-inter text-sm text-[#55555d] leading-relaxed">
-                {card.description}
-              </p>
+              <div className="space-y-2 pt-0.5 min-w-0">
+                <h3 className="font-outfit text-lg text-[#111115] font-light">{card.title}</h3>
+                <p className="font-inter text-sm text-[#55555d] leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>

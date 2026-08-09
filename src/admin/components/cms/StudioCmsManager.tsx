@@ -243,13 +243,17 @@ export const StudioCmsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Long Story Paragraph</label>
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Long Story (paragraphs)</label>
                   <Textarea
-                    rows={5}
+                    rows={7}
                     value={studio.story_content || ''}
                     onChange={(e) => setStudio((prev) => ({ ...prev, story_content: e.target.value }))}
                     placeholder="Founded in 2018, KINETIC emerged from a conviction..."
                   />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Press Enter once between paragraphs. Each line becomes its own justified
+                    paragraph on the Studio page.
+                  </p>
                 </div>
               </div>
             )}

@@ -3,18 +3,21 @@ import path from 'path';
 import fs from 'fs';
 import { Request } from 'express';
 
+// Root directory where uploaded files are physically stored. Defaults to <app>/uploads
+// (the previous hardcoded behavior) but can be pointed at a persistent path outside the
+// deployed code directory via the UPLOAD_DIR env var — important on platforms like
+// Hostinger's Git-based Node.js deploy, where the deployed directory itself is reset to
+// match the git tree on every push/redeploy, wiping anything not tracked in git
+// (uploaded files are intentionally never committed to git).
+export const UPLOAD_ROOT = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.join(process.cwd(), 'uploads');
+
 // Ensure upload directories exist
-const uploadDirs = [
-  'uploads/logos',
-  'uploads/projects',
-  'uploads/blog',
-  'uploads/studio',
-  'uploads/comic-panels',
-  'uploads/general',
-];
+const uploadDirs = ['logos', 'projects', 'blog', 'studio', 'comic-panels', 'general'];
 
 uploadDirs.forEach((dir) => {
-  const fullPath = path.join(process.cwd(), dir);
+  const fullPath = path.join(UPLOAD_ROOT, dir);
   if (!fs.existsSync(fullPath)) {
     fs.mkdirSync(fullPath, { recursive: true });
   }
@@ -48,7 +51,7 @@ const storage = multer.diskStorage({
     // 'general' rather than silently mis-filing the upload.
     const folder = resolveUploadFolder(req.body?.category);
     req.resolvedUploadFolder = folder;
-    cb(null, path.join(process.cwd(), 'uploads', folder));
+    cb(null, path.join(UPLOAD_ROOT, folder));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
