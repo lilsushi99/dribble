@@ -1,4 +1,5 @@
 import kineticLogo from '../assets/images/kinetic_logo.svg';
+import { useSettings } from '../context/SettingsContext';
 
 interface FooterSectionProps {
   onNavigate: (sectionId: string) => void;
@@ -6,6 +7,8 @@ interface FooterSectionProps {
 }
 
 export default function FooterSection({ onNavigate }: FooterSectionProps) {
+  const { settings } = useSettings();
+
   const quickLinks = [
     { label: 'Home', id: 'home' },
     { label: 'Studio', id: 'studio' },
@@ -14,12 +17,19 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
     { label: 'Contact', id: 'contact' },
   ];
 
-  const socialLinks = [
-    { label: 'X / Twitter', url: 'https://twitter.com' },
-    { label: 'Instagram', url: 'https://instagram.com' },
-    { label: 'LinkedIn', url: 'https://linkedin.com' },
-    { label: 'GitHub', url: 'https://github.com' },
+  const allSocialLinks = [
+    { label: 'X / Twitter', url: settings?.social_twitter },
+    { label: 'Instagram', url: settings?.social_instagram },
+    { label: 'LinkedIn', url: settings?.social_linkedin },
+    { label: 'GitHub', url: settings?.social_github },
   ];
+  // Only show social links that actually have a URL configured, so an empty/placeholder
+  // value doesn't render a dead link.
+  const socialLinks = allSocialLinks.filter((s) => s.url && s.url.trim().length > 0);
+
+  const defaultWhitePath = '/uploads/logos/kinetic-white.svg';
+  const hasCustomLogo = settings?.white_logo && settings.white_logo !== defaultWhitePath;
+  const logoSrc = hasCustomLogo ? settings.white_logo : kineticLogo;
 
   return (
     <footer
@@ -36,14 +46,15 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
             aria-label="Comic Art Studio Home"
           >
             <img
-              src={kineticLogo}
+              src={logoSrc}
               alt="Comic Art Studio Logo"
               className="h-6 sm:h-7 w-auto object-contain"
             />
           </button>
 
           <p className="font-inter text-sm text-[#9a9a9e] max-w-sm leading-relaxed">
-            Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga pages, and creative collaboration.
+            {settings?.footer_info ||
+              'Comic Art Studio is an independent creative studio dedicated to custom comic books, character design, sequential storytelling, manga pages, and creative collaboration.'}
           </p>
         </div>
 
@@ -82,14 +93,6 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
                   </a>
                 </li>
               ))}
-              <li className="pt-2 border-t border-white/5">
-                <button
-                  onClick={() => onNavigate('admin')}
-                  className="text-[#55555d] hover:text-[#9a9a9e] text-[11px] font-normal transition-colors cursor-pointer text-left focus:outline-none"
-                >
-                  Admin
-                </button>
-              </li>
             </ul>
           </div>
         </div>
@@ -97,9 +100,21 @@ export default function FooterSection({ onNavigate }: FooterSectionProps) {
 
       {/* Bottom Legal & Attribution */}
       <div className="max-w-7xl mx-auto w-full pt-12 mt-12 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 font-inter text-xs text-[#9a9a9e]">
-        <div>© {new Date().getFullYear()} Comic Art Studio. All rights reserved.</div>
+        <div>{settings?.copyright_text || `© ${new Date().getFullYear()} Comic Art Studio. All rights reserved.`}</div>
         <div>
-          Designed by <span className="text-white font-medium">Comic Art Studio</span>
+          Designed by{' '}
+          {settings?.designer_url ? (
+            <a
+              href={settings.designer_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white font-medium hover:text-[#9a9a9e] transition-colors"
+            >
+              {settings?.designer_credit || 'Comic Art Studio'}
+            </a>
+          ) : (
+            <span className="text-white font-medium">{settings?.designer_credit || 'Comic Art Studio'}</span>
+          )}
         </div>
       </div>
     </footer>

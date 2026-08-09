@@ -36,7 +36,7 @@ export default function ContactSection() {
     email: '',
     company: '',
     project_type: 'Brand Architecture',
-    budget: '$50k - $100k',
+    budget: '',
     message: '',
   });
 
@@ -163,7 +163,9 @@ export default function ContactSection() {
               src={artistImage}
               alt="Studio designer artwork"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover filter grayscale contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700"
+              className={`w-full h-full object-cover contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700 ${
+                settings?.contact_image_grayscale === 'true' ? 'filter grayscale' : ''
+              }`}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-transparent to-transparent" />
             <div className="absolute bottom-5 left-5 right-5 font-inter text-xs text-[#9a9a9e] space-y-1">
@@ -238,10 +240,15 @@ export default function ContactSection() {
                         {field.label} {field.required && <span className="text-[#E6A800]">*</span>}
                       </label>
                       <select
-                        value={val || (field.options && field.options[0]) || ''}
+                        value={val || ''}
                         onChange={(e) => handleInputChange(field.name, e.target.value)}
                         className="w-full bg-[#050505] border border-white/10 focus:border-[#0097FF] rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none transition-colors"
                       >
+                        {field.name === 'budget' && (
+                          <option value="" disabled>
+                            $500
+                          </option>
+                        )}
                         {field.options?.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}

@@ -70,7 +70,17 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
       {/* Page Title */}
       <div className="space-y-4 max-w-3xl pt-8">
         <h1 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight leading-[1.08]">
-          {heroHeading}
+          {(() => {
+            const words = (heroHeading || '').trim().split(/\s+/).filter(Boolean);
+            const lead = words.length > 1 ? words.slice(0, -1).join(' ') : '';
+            const accent = words.length > 0 ? words[words.length - 1] : '';
+            return (
+              <>
+                {lead && <span className="text-white">{lead}&nbsp;</span>}
+                <span className="text-[#E6A800]">{accent}</span>
+              </>
+            );
+          })()}
         </h1>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] font-normal leading-relaxed">
           {heroSubheading}

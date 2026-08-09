@@ -13,6 +13,7 @@ export interface SettingsState {
   designer_url: string;
   white_logo: string;
   black_logo: string;
+  admin_logo: string;
   favicon: string;
   social_twitter: string;
   social_instagram: string;
@@ -39,6 +40,7 @@ const defaultSettings: SettingsState = {
   designer_url: 'https://comicartstudio.com',
   white_logo: '/uploads/logos/kinetic-white.svg',
   black_logo: '/uploads/logos/kinetic-black.svg',
+  admin_logo: '',
   favicon: '/favicon.ico',
   social_twitter: 'https://twitter.com',
   social_instagram: 'https://instagram.com',
@@ -74,6 +76,16 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (st.theme_heading) root.style.setProperty('--heading-color', st.theme_heading);
     if (st.theme_body) root.style.setProperty('--body-color', st.theme_body);
     if (st.theme_bg) root.style.setProperty('--background-color', st.theme_bg);
+
+    if (st.favicon) {
+      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = st.favicon;
+    }
   };
 
   const loadSettings = async () => {

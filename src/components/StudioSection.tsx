@@ -99,8 +99,9 @@ export default function StudioSection() {
         setMetrics(
           home.statistics_json.slice(0, 5).map((stat, idx) => {
             const { prefix, target, suffix } = parseStatValue(stat.value);
-            const thumbImgs = stat.image
-              ? [stat.image, stat.image, stat.image, stat.image, stat.image]
+            const ownImages = stat.images && stat.images.length > 0 ? stat.images : null;
+            const thumbImgs = ownImages
+              ? [0, 1, 2, 3, 4].map((i) => ownImages[i % ownImages.length])
               : [0, 1, 2, 3, 4].map((i) => decorativeThumbPool[(idx + i) % decorativeThumbPool.length]);
             return {
               id: `stat-${idx}`,

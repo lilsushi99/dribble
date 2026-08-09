@@ -13,9 +13,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  Sparkles,
   Terminal,
 } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export type AdminTab =
   | 'dashboard'
@@ -45,6 +45,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onToggleCollapse,
   onViewWebsite,
 }) => {
+  const { settings } = useSettings();
   const navItems = [
     { id: 'dashboard' as AdminTab, label: 'Dashboard', icon: LayoutDashboard, badge: null },
     { id: 'layout-builder' as AdminTab, label: 'Layout Builder', icon: Layers, badge: 'Core' },
@@ -68,16 +69,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Brand Header */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200/80 dark:border-zinc-800/80 shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
+          {settings?.admin_logo ? (
+            <img
+              src={settings.admin_logo}
+              alt="Admin logo"
+              className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-zinc-800"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-slate-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-outfit font-semibold text-sm shrink-0">
+              {(settings?.site_name || 'CA').trim().charAt(0).toUpperCase()}
+            </div>
+          )}
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="font-bold text-sm text-slate-900 dark:text-zinc-100 tracking-wider">
-                KINETIC
+                {settings?.site_name || 'COMIC ART'}
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
-                ADMIN ENGINE
+                ADMIN
               </span>
             </div>
           )}

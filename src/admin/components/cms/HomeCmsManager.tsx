@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Textarea, DeviceImageUpload } from '../ui';
+import { Card, Button, Input, Textarea, DeviceImageUpload, DeviceMultiImageUpload } from '../ui';
 import { adminApi, defaultHomepageData } from '../../services/adminApi';
 import { useSettings } from '../../../context/SettingsContext';
 import { HomepageContent, HomepageStat } from '../../types/admin.types';
@@ -47,28 +47,30 @@ interface SiteFields {
   heroBackgroundImage: string;
   comicPanelHeading: string;
   comicPanelSubtitle: string;
-  comicPanelImage1: string;
-  comicPanelImage2: string;
-  comicPanelImage3: string;
+  comicPanel1Images: string[];
+  comicPanel2Images: string[];
+  comicPanel3Images: string[];
   projectsHeading: string;
   projectsSubtitle: string;
   projectsCount: string;
   faqHeading: string;
   faqSubtitle: string;
+  marqueeSpeed: string;
 }
 
 const emptySiteFields: SiteFields = {
   heroBackgroundImage: '',
   comicPanelHeading: '',
   comicPanelSubtitle: '',
-  comicPanelImage1: '',
-  comicPanelImage2: '',
-  comicPanelImage3: '',
+  comicPanel1Images: [],
+  comicPanel2Images: [],
+  comicPanel3Images: [],
   projectsHeading: '',
   projectsSubtitle: '',
   projectsCount: '6',
   faqHeading: '',
   faqSubtitle: '',
+  marqueeSpeed: '30',
 };
 
 export const HomeCmsManager: React.FC = () => {
@@ -120,18 +122,28 @@ export const HomeCmsManager: React.FC = () => {
 
   useEffect(() => {
     if (!settings) return;
+    const parseArr = (raw: string | undefined): string[] => {
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    };
     setSite({
       heroBackgroundImage: settings.hero_background_image || '',
       comicPanelHeading: settings.comic_panel_heading || '',
       comicPanelSubtitle: settings.comic_panel_subtitle || '',
-      comicPanelImage1: settings.comic_panel_image_1 || '',
-      comicPanelImage2: settings.comic_panel_image_2 || '',
-      comicPanelImage3: settings.comic_panel_image_3 || '',
+      comicPanel1Images: parseArr(settings.comic_panel_1_images),
+      comicPanel2Images: parseArr(settings.comic_panel_2_images),
+      comicPanel3Images: parseArr(settings.comic_panel_3_images),
       projectsHeading: settings.homepage_projects_heading || '',
       projectsSubtitle: settings.homepage_projects_subtitle || '',
       projectsCount: settings.homepage_projects_count || '6',
       faqHeading: settings.homepage_faq_heading || '',
       faqSubtitle: settings.homepage_faq_subtitle || '',
+      marqueeSpeed: settings.marquee_speed || '30',
     });
     if (settings.homepage_faqs) {
       try {
@@ -155,15 +167,16 @@ export const HomeCmsManager: React.FC = () => {
           hero_background_image: site.heroBackgroundImage,
           comic_panel_heading: site.comicPanelHeading,
           comic_panel_subtitle: site.comicPanelSubtitle,
-          comic_panel_image_1: site.comicPanelImage1,
-          comic_panel_image_2: site.comicPanelImage2,
-          comic_panel_image_3: site.comicPanelImage3,
+          comic_panel_1_images: JSON.stringify(site.comicPanel1Images),
+          comic_panel_2_images: JSON.stringify(site.comicPanel2Images),
+          comic_panel_3_images: JSON.stringify(site.comicPanel3Images),
           homepage_projects_heading: site.projectsHeading,
           homepage_projects_subtitle: site.projectsSubtitle,
           homepage_projects_count: site.projectsCount,
           homepage_faq_heading: site.faqHeading,
           homepage_faq_subtitle: site.faqSubtitle,
           homepage_faqs: JSON.stringify(faqs),
+          marquee_speed: site.marqueeSpeed,
         },
         'homepage'
       );
@@ -178,7 +191,7 @@ export const HomeCmsManager: React.FC = () => {
 
   // Statistics Handlers
   const handleAddStat = () => {
-    const newStat: HomepageStat = { label: 'New Metric', value: '0', image: '' };
+    const newStat: HomepageStat = { label: 'New Metric', value: '0', images: [] };
     setHome((prev) => ({ ...prev, statistics_json: [...(prev.statistics_json || []), newStat] }));
   };
 
@@ -189,11 +202,20 @@ export const HomeCmsManager: React.FC = () => {
     }));
   };
 
-  const handleUpdateStat = (index: number, field: keyof HomepageStat, val: string) => {
+  const handleUpdateStat = (index: number, field: 'label' | 'value', val: string) => {
     setHome((prev) => ({
       ...prev,
       statistics_json: (prev.statistics_json || []).map((s, i) =>
         i === index ? { ...s, [field]: val } : s
+      ),
+    }));
+  };
+
+  const handleUpdateStatImages = (index: number, images: string[]) => {
+    setHome((prev) => ({
+      ...prev,
+      statistics_json: (prev.statistics_json || []).map((s, i) =>
+        i === index ? { ...s, images } : s
       ),
     }));
   };
@@ -432,29 +454,40 @@ export const HomeCmsManager: React.FC = () => {
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <DeviceImageUpload
-                    label="Comic Panel Image 1"
-                    value={site.comicPanelImage1}
-                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage1: url }))}
-                    category="comic-panels"
-                  />
-                  <DeviceImageUpload
-                    label="Comic Panel Image 2"
-                    value={site.comicPanelImage2}
-                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage2: url }))}
-                    category="comic-panels"
-                  />
-                  <DeviceImageUpload
-                    label="Comic Panel Image 3"
-                    value={site.comicPanelImage3}
-                    onChange={(url) => setSite((prev) => ({ ...prev, comicPanelImage3: url }))}
-                    category="comic-panels"
-                  />
+                  <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="font-semibold text-slate-700 dark:text-zinc-300">
+                      Comic Panel 1 ({site.comicPanel1Images.length} image{site.comicPanel1Images.length === 1 ? '' : 's'})
+                    </div>
+                    <DeviceMultiImageUpload
+                      values={site.comicPanel1Images}
+                      onChange={(urls) => setSite((prev) => ({ ...prev, comicPanel1Images: urls }))}
+                      category="comic-panels"
+                    />
+                  </div>
+                  <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="font-semibold text-slate-700 dark:text-zinc-300">
+                      Comic Panel 2 ({site.comicPanel2Images.length} image{site.comicPanel2Images.length === 1 ? '' : 's'})
+                    </div>
+                    <DeviceMultiImageUpload
+                      values={site.comicPanel2Images}
+                      onChange={(urls) => setSite((prev) => ({ ...prev, comicPanel2Images: urls }))}
+                      category="comic-panels"
+                    />
+                  </div>
+                  <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="font-semibold text-slate-700 dark:text-zinc-300">
+                      Comic Panel 3 ({site.comicPanel3Images.length} image{site.comicPanel3Images.length === 1 ? '' : 's'})
+                    </div>
+                    <DeviceMultiImageUpload
+                      values={site.comicPanel3Images}
+                      onChange={(urls) => setSite((prev) => ({ ...prev, comicPanel3Images: urls }))}
+                      category="comic-panels"
+                    />
+                  </div>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  These 3 images rotate across the three animated columns exactly as before — only the
-                  image source changed from bundled assets to your uploads. The scroll/loop animation
-                  itself is untouched.
+                  Each panel loops through its own images independently, exactly like before — only
+                  the number of images per panel changed from fixed-at-one to however many you add here.
                 </p>
               </div>
             )}
@@ -487,6 +520,19 @@ export const HomeCmsManager: React.FC = () => {
                 <Button type="button" variant="outline" size="sm" onClick={handleAddMarqueeItem}>
                   <Plus className="w-3.5 h-3.5 mr-1" /> Add Word
                 </Button>
+                <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 max-w-xs">
+                  <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">
+                    Speed (seconds per loop — lower is faster)
+                  </label>
+                  <Input
+                    type="number"
+                    min={5}
+                    max={120}
+                    value={site.marqueeSpeed}
+                    onChange={(e) => setSite((prev) => ({ ...prev, marqueeSpeed: e.target.value }))}
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">Default is 30. Leave as-is if unsure.</p>
+                </div>
               </div>
             )}
           </div>
@@ -633,12 +679,15 @@ export const HomeCmsManager: React.FC = () => {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <DeviceImageUpload
-                        label="Popup Image"
-                        value={stat.image || ''}
-                        onChange={(url) => handleUpdateStat(index, 'image', url)}
+                      <DeviceMultiImageUpload
+                        values={stat.images || []}
+                        onChange={(urls) => handleUpdateStatImages(index, urls)}
                         category="studio"
                       />
+                      <p className="text-[11px] text-slate-400">
+                        Add up to several images ({(stat.images || []).length} added) — they cycle
+                        through the same popup animation as before.
+                      </p>
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" onClick={handleAddStat}>

@@ -171,7 +171,7 @@ export default function BlogDetailPage({ onOpenBookCall }: BlogDetailPageProps) 
 
       {/* Main Formatted Body */}
       <article
-        className="prose prose-invert max-w-none text-[#d1d1d6] font-inter text-sm sm:text-base leading-relaxed space-y-6 border-b border-white/10 pb-12"
+        className="prose prose-invert max-w-none text-[#d1d1d6] font-inter text-sm sm:text-base leading-relaxed text-justify space-y-6 border-b border-white/10 pb-12"
         dangerouslySetInnerHTML={{
           __html:
             post.content ||

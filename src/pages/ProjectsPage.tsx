@@ -200,15 +200,33 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
       {/* Header (White text brightness reveal, yellow text static) */}
       <div className="space-y-4 max-w-3xl pt-8">
         <h1 className="font-outfit text-4xl sm:text-6xl font-light text-white tracking-tight leading-[1.08]">
-          <span
-            className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
-            style={{
+          {(() => {
+            const words = (heroHeading || '').trim().split(/\s+/).filter(Boolean);
+            const lead = words.length > 1 ? words.slice(0, -1).join(' ') : '';
+            const accent = words.length > 0 ? words[words.length - 1] : '';
+            const revealStyle = {
               opacity: scrollProgress > 0.05 ? 1 : 0.35,
               filter: scrollProgress > 0.05 ? 'brightness(1)' : 'brightness(0.35)',
-            }}
-          >
-            {heroHeading}
-          </span>
+            };
+            return (
+              <>
+                {lead && (
+                  <span
+                    className="inline-block transition-all duration-1000 ease-out will-change-[opacity,filter]"
+                    style={revealStyle}
+                  >
+                    {lead}&nbsp;
+                  </span>
+                )}
+                <span
+                  className="inline-block text-[#E6A800] transition-all duration-1000 ease-out will-change-[opacity,filter]"
+                  style={revealStyle}
+                >
+                  {accent}
+                </span>
+              </>
+            );
+          })()}
         </h1>
         <p className="font-inter text-base sm:text-lg text-[#9a9a9e] font-normal leading-relaxed">
           {heroSubheading}

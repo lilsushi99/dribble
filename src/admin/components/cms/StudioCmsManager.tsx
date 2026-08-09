@@ -17,9 +17,10 @@ export const StudioCmsManager: React.FC = () => {
       { id: '4', title: 'Awards', value: '6', images: [] },
     ],
     value_cards: [
-      { id: '1', title: 'Mission', description: 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.' },
-      { id: '2', title: 'Vision', description: 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.' },
-      { id: '3', title: 'Philosophy', description: 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.' },
+      { id: '1', title: 'Discover', description: 'We start by understanding your goals, audience, and the story you need told, grounding every decision in a clear creative brief.' },
+      { id: '2', title: 'Design', description: 'Concepts, character studies, and layout exploration follow, refined through iteration until the direction feels right.' },
+      { id: '3', title: 'Create', description: 'Full production begins: inking, coloring, and page assembly, crafted with the same discipline at every stage.' },
+      { id: '4', title: 'Deliver', description: 'Final review, polish, and handoff of production-ready files, with support available after launch.' },
     ],
     show_comic_panel: true,
     show_counter: true,
@@ -362,7 +363,7 @@ export const StudioCmsManager: React.FC = () => {
             >
               <span className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-mono">04</span>
-                <span>Mission, Vision, Philosophy Cards ({studio.value_cards.length} Cards)</span>
+                <span>Process Steps ({studio.value_cards.length} Steps)</span>
               </span>
               {openSections.values ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
             </button>
@@ -371,10 +372,10 @@ export const StudioCmsManager: React.FC = () => {
               <div className="p-5 space-y-6 text-xs">
                 <div className="flex items-center justify-between">
                   <p className="text-slate-500 dark:text-zinc-400 text-xs">
-                    Titles are optional. Customize Mission, Vision, Philosophy or create new cards.
+                    Displayed as a numbered timeline (Step 1 → 2 → 3 → 4...) on the Studio page.
                   </p>
                   <Button type="button" variant="outline" size="sm" onClick={handleAddValueCard}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Card
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Step
                   </Button>
                 </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import kineticLogo from '../assets/images/kinetic_logo.svg';
+import { useSettings } from '../context/SettingsContext';
 
 interface NavbarProps {
   currentRoute?: string;
@@ -8,6 +9,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCall }: NavbarProps) {
+  const { settings } = useSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isNavHovered, setIsNavHovered] = useState(false);
@@ -78,13 +80,23 @@ export default function Navbar({ currentRoute = 'home', onNavigate, onOpenBookCa
             className="group text-left flex items-center cursor-pointer focus:outline-none"
             aria-label="Comic Art Studio Home"
           >
-            <img
-              src={kineticLogo}
-              alt="Comic Art Studio Logo"
-              className={`h-6 sm:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90 ${
-                isLightSection ? 'filter brightness-0' : 'filter brightness-100'
-              }`}
-            />
+            {(() => {
+              const defaultWhitePath = '/uploads/logos/kinetic-white.svg';
+              const defaultBlackPath = '/uploads/logos/kinetic-black.svg';
+              const hasCustomWhite = settings?.white_logo && settings.white_logo !== defaultWhitePath;
+              const hasCustomBlack = settings?.black_logo && settings.black_logo !== defaultBlackPath;
+              const useCustom = isLightSection ? hasCustomBlack : hasCustomWhite;
+              const logoSrc = useCustom ? (isLightSection ? settings.black_logo : settings.white_logo) : kineticLogo;
+              return (
+                <img
+                  src={logoSrc}
+                  alt="Comic Art Studio Logo"
+                  className={`h-6 sm:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90 ${
+                    useCustom ? '' : isLightSection ? 'filter brightness-0' : 'filter brightness-100'
+                  }`}
+                />
+              );
+            })()}
           </button>
         </div>
 

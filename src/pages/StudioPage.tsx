@@ -177,14 +177,18 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
           ref={headingRef}
           className="font-outfit text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-[1.06] text-white"
         >
-          {studioData?.intro_heading ? (
-            studioData.intro_heading
-          ) : (
-            <>
-              <span className="text-white">Our&nbsp;</span>
-              <span className="text-[#E6A800]">Story</span>
-            </>
-          )}
+          {(() => {
+            const headingText = studioData?.intro_heading || 'Our Story';
+            const words = headingText.trim().split(/\s+/).filter(Boolean);
+            const lead = words.length > 1 ? words.slice(0, -1).join(' ') : '';
+            const accent = words.length > 0 ? words[words.length - 1] : 'Story';
+            return (
+              <>
+                {lead && <span className="text-white">{lead}&nbsp;</span>}
+                <span className="text-[#E6A800]">{accent}</span>
+              </>
+            );
+          })()}
         </h1>
         <p className="font-inter text-lg sm:text-xl text-[#9a9a9e] font-normal leading-relaxed">
           {studioData?.intro_subtitle ||
@@ -195,7 +199,7 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
       {/* Long-form Studio Story */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pt-8 border-t border-white/10">
         <div className="md:col-span-4">
-          <h2 className="font-outfit text-2xl sm:text-3xl font-light text-white tracking-tight sticky top-32">
+          <h2 className="font-outfit text-2xl sm:text-3xl font-light text-white tracking-tight md:sticky md:top-32">
             {studioData?.story_heading || 'The Origin & Craft'}
           </h2>
         </div>
@@ -221,21 +225,38 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
         </div>
       </div>
 
-      {/* Mission, Vision & Creative Philosophy Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-white/10">
-        {(studioData?.value_cards && studioData.value_cards.length > 0 ? studioData.value_cards : [
-          { id: '1', title: 'Eliminate Noise', description: 'To strip away superfluous digital decoration and build quiet, high-contrast digital monuments that command immediate respect and lasting clarity.' },
-          { id: '2', title: 'Permanence & Inertia', description: 'A web ecosystem where interactive architecture exhibits physical weight, tactile responsiveness, and editorial craftsmanship worthy of museum archival status.' },
-          { id: '3', title: 'Sculptural Rigor', description: 'We treat layout margins, typographic scale ratios, and animation inertia curves as mathematical laws, ensuring every interface feels bespoke and deliberate.' },
-        ]).map((card, idx) => (
-          <div key={card.id || idx} className="bg-[#0a0a0c] border border-white/10 p-8 rounded-2xl space-y-4 hover:border-white/20 transition-colors">
-            <div className="text-xs font-inter uppercase tracking-widest text-[#E6A800]">0{idx + 1} / {card.title.split(' ')[0]}</div>
-            <h3 className="font-outfit text-2xl text-white font-light">{card.title}</h3>
-            <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
-              {card.description}
-            </p>
-          </div>
-        ))}
+      {/* Our Process — sequential timeline (previously Mission/Vision/Philosophy cards) */}
+      <div className="pt-8 border-t border-white/10 space-y-10">
+        <h2 className="font-outfit text-2xl sm:text-3xl font-light text-white tracking-tight">
+          Our <span className="text-[#E6A800]">Process</span>
+        </h2>
+        <div className="relative flex flex-col md:flex-row md:items-start gap-10 md:gap-6">
+          {/* Connecting line: vertical on mobile, horizontal on desktop */}
+          <div className="hidden md:block absolute top-[13px] left-[6%] right-[6%] h-px bg-white/15" />
+          <div className="md:hidden absolute top-1 bottom-1 left-[13px] w-px bg-white/15" />
+
+          {(studioData?.value_cards && studioData.value_cards.length > 0
+            ? studioData.value_cards
+            : [
+                { id: '1', title: 'Discover', description: 'We start by understanding your goals, audience, and the story you need told, grounding every decision in a clear creative brief.' },
+                { id: '2', title: 'Design', description: 'Concepts, character studies, and layout exploration follow, refined through iteration until the direction feels right.' },
+                { id: '3', title: 'Create', description: 'Full production begins: inking, coloring, and page assembly, crafted with the same discipline at every stage.' },
+                { id: '4', title: 'Deliver', description: 'Final review, polish, and handoff of production-ready files, with support available after launch.' },
+              ]
+          ).map((step, idx) => (
+            <div key={step.id || idx} className="relative flex md:flex-col items-start gap-4 md:gap-6 flex-1 min-w-0">
+              <div className="relative z-10 w-7 h-7 rounded-full border border-white/25 bg-[#050505] flex items-center justify-center flex-shrink-0">
+                <span className="font-inter text-[11px] text-[#E6A800]">{idx + 1}</span>
+              </div>
+              <div className="space-y-2 pt-0.5 min-w-0">
+                <h3 className="font-outfit text-lg text-white font-light">{step.title}</h3>
+                <p className="font-inter text-sm text-[#9a9a9e] leading-relaxed">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Reused Animated Comic Section */}

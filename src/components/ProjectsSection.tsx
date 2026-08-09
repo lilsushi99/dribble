@@ -233,7 +233,7 @@ export default function ProjectsSection({
           return (
             <div
               key={proj.id}
-              className={`${proj.gridSpan} relative group cursor-pointer rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0c] ${
+              className={`${proj.gridSpan} relative group cursor-pointer rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0c] flex flex-col ${
                 isHovered ? 'z-30 shadow-2xl shadow-black border-white/40' : 'z-10'
               } ${isOther ? 'filter brightness-75' : ''}`}
               style={{
@@ -251,31 +251,35 @@ export default function ProjectsSection({
                   e.preventDefault();
                   onSelectProject?.(proj);
                 }}
-                className="block relative w-full h-full"
+                className="flex flex-col h-full"
               >
-                <div className={`relative w-full ${proj.aspectRatio} overflow-hidden`}>
+                {/* Info panel: title/year/description/tag, always readable without hovering */}
+                <div className="p-4 sm:p-5 space-y-1.5 border-b border-white/10 shrink-0">
+                  <div className="flex items-start justify-between gap-3 font-outfit">
+                    <h3 className="text-base sm:text-lg text-[#f3f3f3] font-light group-hover:text-white transition-colors truncate">
+                      {proj.title}
+                    </h3>
+                    <span className="font-inter text-xs text-[#E6A800] font-medium shrink-0 pt-0.5">{proj.year}</span>
+                  </div>
+                  <p className="font-inter text-xs sm:text-sm text-[#9a9a9e] leading-relaxed line-clamp-2">
+                    {proj.description}
+                  </p>
+                  {proj.category && (
+                    <span className="inline-block font-inter text-[10px] uppercase tracking-wider text-[#55555d]">
+                      {proj.category}
+                    </span>
+                  )}
+                </div>
+
+                {/* Image */}
+                <div className={`relative w-full ${proj.aspectRatio} overflow-hidden flex-1`}>
                   <img
                     src={proj.imageUrl}
                     alt={proj.title}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover transform-gpu transition-transform duration-700 ease-out group-hover:scale-105"
                   />
-                  {/* Subtle dark gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-[#050505]/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
-                </div>
-
-                {/* Project Details Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7 flex flex-col justify-end space-y-1 z-10">
-                  <div className="flex items-center justify-between font-inter text-xs text-[#9a9a9e]">
-                    <span>{proj.client}</span>
-                    <span className="text-[#E6A800] font-medium">{proj.year}</span>
-                  </div>
-                  <h3 className="font-outfit text-xl sm:text-2xl text-[#f3f3f3] font-light group-hover:text-white transition-colors">
-                    {proj.title}
-                  </h3>
-                  <p className="font-inter text-xs sm:text-sm text-[#9a9a9e] opacity-90 transition-opacity duration-300 line-clamp-1">
-                    {proj.description}
-                  </p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </a>
             </div>

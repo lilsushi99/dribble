@@ -11,6 +11,8 @@ import { adminApi, defaultHomepageData } from '../admin/services/adminApi';
 import { HomepageContent } from '../admin/types/admin.types';
 import { useSeo } from '../hooks/useSeo';
 
+import { useSettings } from '../context/SettingsContext';
+
 interface HomePageProps {
   onOpenBookCall: () => void;
   onNavigateToProjects: () => void;
@@ -23,6 +25,7 @@ export default function HomePage({
   onSelectProject,
 }: HomePageProps) {
   const [homeContent, setHomeContent] = useState<HomepageContent>(defaultHomepageData);
+  const { settings } = useSettings();
 
   useSeo('homepage');
 
@@ -49,7 +52,7 @@ export default function HomePage({
       <ComicSection />
 
       {/* 2.5 Creative Discipline Dual Ribbon Marquee */}
-      <MarqueeSection words={homeContent.marquee_items_json} />
+      <MarqueeSection words={homeContent.marquee_items_json} speed={parseInt(settings?.marquee_speed || '30', 10) || 30} />
 
       {/* 3. Featured Projects Section */}
       <ProjectsSection

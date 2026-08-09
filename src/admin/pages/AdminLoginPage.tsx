@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Card, Button, Input } from '../components/ui';
-import { Sparkles, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export interface AdminLoginPageProps {
   onLoginSuccess: (email: string, pass: string) => Promise<void>;
 }
 
 export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
+  const { settings } = useSettings();
   const [email, setEmail] = useState('admin@kinetic-studio.com');
   const [password, setPassword] = useState('AdminPassword2026!');
   const [loading, setLoading] = useState(false);
@@ -33,13 +35,21 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* Branding Logo */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 text-white shadow-xl shadow-blue-600/30 mb-2">
-            <Sparkles className="w-6 h-6 animate-pulse" />
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">KINETIC CMS</h1>
-          <p className="text-xs font-medium text-zinc-400">
-            Admin Panel Foundation • Version 1.0
-          </p>
+          {settings?.admin_logo ? (
+            <img
+              src={settings.admin_logo}
+              alt="Admin logo"
+              className="inline-flex w-12 h-12 rounded-2xl object-cover mb-2 border border-white/10"
+            />
+          ) : (
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-900 border border-white/10 text-white font-outfit font-semibold text-lg mb-2">
+              {(settings?.site_name || 'CA').trim().charAt(0).toUpperCase()}
+            </div>
+          )}
+          <h1 className="text-2xl font-extrabold tracking-tight text-white">
+            {settings?.site_name || 'Comic Art Studio'}
+          </h1>
+          <p className="text-xs font-medium text-zinc-400">Admin Panel</p>
         </div>
 
         {/* Login Card */}

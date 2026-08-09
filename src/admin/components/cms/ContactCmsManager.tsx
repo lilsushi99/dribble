@@ -72,6 +72,7 @@ export const ContactCmsManager: React.FC = () => {
 
   // Tab 1 State: Contact Page Editor
   const [artistImage, setArtistImage] = useState<string>('');
+  const [artistImageGrayscale, setArtistImageGrayscale] = useState<boolean>(false);
   const [overlayTitle, setOverlayTitle] = useState<string>('Studio Atelier No. 4');
   const [overlaySub, setOverlaySub] = useState<string>('Monochrome Ink Drafting & Physical Prototypes');
   const [formHeading, setFormHeading] = useState<string>('Contact Us Today');
@@ -122,6 +123,7 @@ export const ContactCmsManager: React.FC = () => {
   useEffect(() => {
     if (settings) {
       if (settings.contact_artist_image !== undefined) setArtistImage(settings.contact_artist_image);
+      if (settings.contact_image_grayscale !== undefined) setArtistImageGrayscale(settings.contact_image_grayscale === 'true');
       if (settings.contact_image_title) setOverlayTitle(settings.contact_image_title);
       if (settings.contact_image_subtitle) setOverlaySub(settings.contact_image_subtitle);
       if (settings.contact_form_heading) setFormHeading(settings.contact_form_heading);
@@ -193,6 +195,7 @@ export const ContactCmsManager: React.FC = () => {
       await updateSettings(
         {
           contact_artist_image: artistImage,
+          contact_image_grayscale: artistImageGrayscale ? 'true' : 'false',
           contact_image_title: overlayTitle,
           contact_image_subtitle: overlaySub,
           contact_form_heading: formHeading,
@@ -435,6 +438,15 @@ export const ContactCmsManager: React.FC = () => {
                 <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-2">
                   Uploaded image replaces the main contact section artist sketch image. No URL needed.
                 </p>
+                <label className="flex items-center gap-2 mt-3 text-xs text-slate-600 dark:text-zinc-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={artistImageGrayscale}
+                    onChange={(e) => setArtistImageGrayscale(e.target.checked)}
+                    className="rounded border-slate-300 dark:border-zinc-700"
+                  />
+                  Apply grayscale/desaturation effect to this image (default: off, full color)
+                </label>
               </div>
 
               <div className="space-y-4">

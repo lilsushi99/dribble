@@ -18,11 +18,24 @@ export default function ComicSection() {
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
   const scrollRef3 = useRef<HTMLDivElement | null>(null);
 
-  // Panel images are CMS-driven (stored in settings) with the original bundled
-  // artwork as a graceful fallback when nothing has been uploaded yet.
-  const img1 = settings?.comic_panel_image_1 || comic1;
-  const img2 = settings?.comic_panel_image_2 || comic2;
-  const img3 = settings?.comic_panel_image_3 || comic3;
+  // Each panel column now supports an independent list of images (stored as a JSON
+  // array in settings) instead of a single image, falling back to the original bundled
+  // artwork when nothing has been uploaded yet.
+  function parseImageList(raw: string | undefined, fallback: string): string[] {
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        // fall through to default
+      }
+    }
+    return [fallback];
+  }
+
+  const panel1Images = parseImageList(settings?.comic_panel_1_images, comic1);
+  const panel2Images = parseImageList(settings?.comic_panel_2_images, comic2);
+  const panel3Images = parseImageList(settings?.comic_panel_3_images, comic3);
 
   const heading = settings?.comic_panel_heading || 'Comic Panels';
   const subtitle =
@@ -33,23 +46,17 @@ export default function ComicSection() {
   const headingLead = headingWords.length > 1 ? headingWords.slice(0, -1).join(' ') : '';
   const headingAccent = headingWords.length > 0 ? headingWords[headingWords.length - 1] : 'Panels';
 
-  const panelSet1 = [
-    { id: 'p1-1', title: 'Chapter I: Monolith', image: img1, chapter: '01' },
-    { id: 'p1-2', title: 'Chapter IV: Drafts', image: img2, chapter: '04' },
-    { id: 'p1-3', title: 'Chapter VII: Silence', image: img3, chapter: '07' },
-  ];
+  const buildPanelSet = (images: string[], colLabel: string) =>
+    images.map((image, idx) => ({
+      id: `${colLabel}-${idx}`,
+      title: `Frame ${idx + 1}`,
+      image,
+      chapter: String(idx + 1).padStart(2, '0'),
+    }));
 
-  const panelSet2 = [
-    { id: 'p2-1', title: 'Chapter II: Craft', image: img2, chapter: '02' },
-    { id: 'p2-2', title: 'Chapter V: Space', image: img3, chapter: '05' },
-    { id: 'p2-3', title: 'Chapter VIII: Structure', image: img1, chapter: '08' },
-  ];
-
-  const panelSet3 = [
-    { id: 'p3-1', title: 'Chapter III: Void', image: img3, chapter: '03' },
-    { id: 'p3-2', title: 'Chapter VI: Form', image: img1, chapter: '06' },
-    { id: 'p3-3', title: 'Chapter IX: Light', image: img2, chapter: '09' },
-  ];
+  const panelSet1 = buildPanelSet(panel1Images, 'p1');
+  const panelSet2 = buildPanelSet(panel2Images, 'p2');
+  const panelSet3 = buildPanelSet(panel3Images, 'p3');
 
   // Typewriter effect state for remaining words in Comic section heading
   const hasTypedRef = useRef(false);
@@ -217,7 +224,7 @@ export default function ComicSection() {
                   src={panel.image}
                   alt={panel.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover filter grayscale contrast-125 brightness-90 group-hover:grayscale-0 transition-all duration-500 block"
+                  className="w-full h-full object-cover filter contrast-125 brightness-90 transition-all duration-500 block"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-[#050505]/90 backdrop-blur-sm px-3 py-2 border-t border-white/10 flex justify-between items-center text-[11px]">
                   <span className="font-outfit text-white font-medium">{panel.title}</span>
@@ -243,7 +250,7 @@ export default function ComicSection() {
                   src={panel.image}
                   alt={panel.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover filter grayscale contrast-130 brightness-95 group-hover:grayscale-0 transition-all duration-500 block"
+                  className="w-full h-full object-cover filter contrast-130 brightness-95 transition-all duration-500 block"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-[#050505]/95 backdrop-blur-sm px-3 py-2 border-t border-white/10 flex justify-between items-center text-[11px]">
                   <span className="font-outfit text-white font-medium">{panel.title}</span>
@@ -269,7 +276,7 @@ export default function ComicSection() {
                   src={panel.image}
                   alt={panel.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover filter grayscale contrast-125 brightness-90 group-hover:grayscale-0 transition-all duration-500 block"
+                  className="w-full h-full object-cover filter contrast-125 brightness-90 transition-all duration-500 block"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-[#050505]/90 backdrop-blur-sm px-3 py-2 border-t border-white/10 flex justify-between items-center text-[11px]">
                   <span className="font-outfit text-white font-medium">{panel.title}</span>

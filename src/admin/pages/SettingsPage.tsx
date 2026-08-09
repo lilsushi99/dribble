@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Textarea, Badge } from '../components/ui';
+import { Card, Button, Input, Textarea, Badge, DeviceImageUpload } from '../components/ui';
 import { Settings, Save, Mail, Send, Database, Server, Image, Palette, Code2, Link, CheckCircle2, UserCheck, Shield } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { adminApi } from '../services/adminApi';
@@ -19,6 +19,7 @@ export const SettingsPage: React.FC = () => {
     designer_credit: settings.designer_credit || 'KINETIC Atelier',
     designer_url: settings.designer_url || 'https://kinetic-studio.com',
     white_logo: settings.white_logo || '/uploads/logos/kinetic-white.svg',
+    admin_logo: settings.admin_logo || '',
     black_logo: settings.black_logo || '/uploads/logos/kinetic-black.svg',
     favicon: settings.favicon || '/favicon.ico',
     social_twitter: settings.social_twitter || 'https://twitter.com',
@@ -59,6 +60,7 @@ export const SettingsPage: React.FC = () => {
       designer_credit: settings.designer_credit || 'KINETIC Atelier',
       designer_url: settings.designer_url || 'https://kinetic-studio.com',
       white_logo: settings.white_logo || '/uploads/logos/kinetic-white.svg',
+    admin_logo: settings.admin_logo || '',
       black_logo: settings.black_logo || '/uploads/logos/kinetic-black.svg',
       favicon: settings.favicon || '/favicon.ico',
       social_twitter: settings.social_twitter || 'https://twitter.com',
@@ -280,30 +282,31 @@ export const SettingsPage: React.FC = () => {
               <Image className="w-4 h-4 text-blue-500" /> Brand Logo & Favicon Assets
             </h3>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">White Logo URL (Dark Backgrounds)</label>
-                <Input
-                  value={formState.white_logo}
-                  onChange={(e) => handleInputChange('white_logo', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Black Logo URL (Light Backgrounds)</label>
-                <Input
-                  value={formState.black_logo}
-                  onChange={(e) => handleInputChange('black_logo', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Favicon URL (.ico / .png)</label>
-                <Input
-                  value={formState.favicon}
-                  onChange={(e) => handleInputChange('favicon', e.target.value)}
-                />
-              </div>
+            <div className="space-y-4 text-xs">
+              <DeviceImageUpload
+                label="White Logo (for dark backgrounds — most of the site)"
+                value={formState.white_logo}
+                onChange={(url) => handleInputChange('white_logo', url)}
+                category="logos"
+              />
+              <DeviceImageUpload
+                label="Black Logo (for light-background sections)"
+                value={formState.black_logo}
+                onChange={(url) => handleInputChange('black_logo', url)}
+                category="logos"
+              />
+              <DeviceImageUpload
+                label="Favicon"
+                value={formState.favicon}
+                onChange={(url) => handleInputChange('favicon', url)}
+                category="logos"
+              />
+              <DeviceImageUpload
+                label="Admin Panel Logo"
+                value={formState.admin_logo}
+                onChange={(url) => handleInputChange('admin_logo', url)}
+                category="logos"
+              />
             </div>
           </Card>
 
