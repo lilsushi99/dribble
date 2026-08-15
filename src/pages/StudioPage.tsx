@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSeo } from '../hooks/useSeo';
+import { useTrackPageView } from '../hooks/useTrackPageView';
 import ComicSection from '../components/ComicSection';
 import comic1 from '../assets/images/comic_panel_1_1785513144023.jpg';
 import comic2 from '../assets/images/comic_panel_2_1785513156210.jpg';
@@ -24,6 +25,7 @@ interface Metric {
 
 export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
   useSeo('studio');
+  useTrackPageView('studio');
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isHeadingIlluminated, setIsHeadingIlluminated] = useState(false);
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
@@ -128,7 +130,7 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [studioData]);
 
   // Counting numbers animation when metrics section enters viewport
   useEffect(() => {
@@ -167,7 +169,13 @@ export default function StudioPage({ onNavigateToProjects }: StudioPageProps) {
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
+  }, [hasAnimated, studioData]);
+
+  if (!studioData) {
+    // Neutral placeholder matching the page's own background — avoids flashing
+    // fallback content before real data loads.
+    return <div className="min-h-screen w-full bg-[#050505]" />;
+  }
 
   return (
     <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-28 bg-[#050505] text-[#f3f3f3]">

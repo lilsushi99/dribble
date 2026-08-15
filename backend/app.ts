@@ -66,6 +66,29 @@ app.get('/api/health', async (req, res) => {
       note: process.env.UPLOAD_DIR
         ? 'UPLOAD_DIR is set — uploads should survive redeploys if this path is outside the deployed code directory.'
         : 'UPLOAD_DIR is not set — uploads are stored inside the deployed code directory and may be wiped on redeploy.',
+      cwd: process.cwd(),
+      // Diagnostic only: lists real directory contents around the running app's actual
+      // working directory, so the persistent "nodejs/storage/media" folder (or wherever
+      // it actually is) can be located with certainty instead of guessing candidate paths.
+      // Remove this block once UPLOAD_DIR is confirmed and set.
+      directory_listing: (() => {
+        const safeReaddir = (p: string) => {
+          try {
+            return fs.readdirSync(p);
+          } catch (e: any) {
+            return `error: ${e.message}`;
+          }
+        };
+        const oneUp = path.resolve(process.cwd(), '..');
+        const twoUp = path.resolve(process.cwd(), '../..');
+        const threeUp = path.resolve(process.cwd(), '../../..');
+        return {
+          cwd_contents: safeReaddir(process.cwd()),
+          one_level_up: { path: oneUp, contents: safeReaddir(oneUp) },
+          two_levels_up: { path: twoUp, contents: safeReaddir(twoUp) },
+          three_levels_up: { path: threeUp, contents: safeReaddir(threeUp) },
+        };
+      })(),
     },
   });
 });

@@ -10,6 +10,7 @@ import { Project } from '../types';
 import { adminApi, defaultHomepageData } from '../admin/services/adminApi';
 import { HomepageContent } from '../admin/types/admin.types';
 import { useSeo } from '../hooks/useSeo';
+import { useTrackPageView } from '../hooks/useTrackPageView';
 
 import { useSettings } from '../context/SettingsContext';
 
@@ -24,20 +25,30 @@ export default function HomePage({
   onNavigateToProjects,
   onSelectProject,
 }: HomePageProps) {
-  const [homeContent, setHomeContent] = useState<HomepageContent>(defaultHomepageData);
-  const { settings } = useSettings();
+  const [homeContent, setHomeContent] = useState<HomepageContent | null>(null);
+  const { settings, loading: settingsLoading } = useSettings();
 
   useSeo('homepage');
+  useTrackPageView('home');
 
   useEffect(() => {
     let isMounted = true;
     adminApi.getHomepageData().then((data) => {
-      if (isMounted && data) setHomeContent(data);
+      if (isMounted) setHomeContent(data || defaultHomepageData);
     });
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const isReady = homeContent !== null && !settingsLoading;
+
+  if (!isReady) {
+    // Neutral placeholder matching the Hero section's own background — avoids ever
+    // flashing stale/default content while the real data loads, without introducing
+    // a spinner or skeleton UI that looks out of place.
+    return <div className="min-h-screen w-full bg-black" />;
+  }
 
   return (
     <main className="space-y-0">

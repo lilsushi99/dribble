@@ -18,6 +18,7 @@ import ContactPage from './pages/ContactPage';
 import { AdminLayout } from './admin/AdminLayout';
 import { ShieldCheck, Sparkles } from 'lucide-react';
 import { Project } from './types';
+import { adminApi } from './admin/services/adminApi';
 
 export default function App() {
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
@@ -27,6 +28,11 @@ export default function App() {
   const location = useLocation();
 
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  const handleOpenBookCall = () => {
+    adminApi.trackEvent('book_call_click', location.pathname);
+    setIsBookCallOpen(true);
+  };
 
   // Initialize Lenis Smooth Scroll only for public pages
   useEffect(() => {
@@ -93,7 +99,7 @@ export default function App() {
       <Navbar
         currentRoute={getActiveRoute()}
         onNavigate={handleNavigate}
-        onOpenBookCall={() => setIsBookCallOpen(true)}
+        onOpenBookCall={handleOpenBookCall}
       />
 
       {/* Main View Area */}
@@ -103,7 +109,7 @@ export default function App() {
             path="/"
             element={
               <HomePage
-                onOpenBookCall={() => setIsBookCallOpen(true)}
+                onOpenBookCall={handleOpenBookCall}
                 onNavigateToProjects={() => navigate('/projects')}
                 onSelectProject={(proj) => setSelectedProject(proj)}
               />
@@ -113,7 +119,7 @@ export default function App() {
             path="/studio"
             element={
               <StudioPage
-                onOpenBookCall={() => setIsBookCallOpen(true)}
+                onOpenBookCall={handleOpenBookCall}
                 onNavigateToProjects={() => navigate('/projects')}
               />
             }
@@ -123,7 +129,7 @@ export default function App() {
             element={
               <ProjectsPage
                 onSelectProject={(proj) => setSelectedProject(proj)}
-                onOpenBookCall={() => setIsBookCallOpen(true)}
+                onOpenBookCall={handleOpenBookCall}
                 onNavigateToContact={() => navigate('/contact')}
               />
             }
@@ -132,7 +138,7 @@ export default function App() {
             path="/blog"
             element={
               <BlogPage
-                onOpenBookCall={() => setIsBookCallOpen(true)}
+                onOpenBookCall={handleOpenBookCall}
               />
             }
           />
@@ -140,7 +146,7 @@ export default function App() {
             path="/blog/:slug"
             element={
               <BlogDetailPage
-                onOpenBookCall={() => setIsBookCallOpen(true)}
+                onOpenBookCall={handleOpenBookCall}
               />
             }
           />
@@ -154,7 +160,7 @@ export default function App() {
       {/* Universal Footer */}
       <FooterSection
         onNavigate={(target) => handleNavigate(target)}
-        onOpenBookCall={() => setIsBookCallOpen(true)}
+        onOpenBookCall={handleOpenBookCall}
       />
 
       {/* Book a Call Modal */}

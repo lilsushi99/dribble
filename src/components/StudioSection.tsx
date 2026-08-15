@@ -6,6 +6,7 @@ import comic3 from '../assets/images/comic_panel_3_1785513168462.jpg';
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
 import { adminApi } from '../admin/services/adminApi';
+import { ValueCardItem } from '../admin/types/admin.types';
 
 interface Metric {
   id: string;
@@ -17,14 +18,14 @@ interface Metric {
   thumbImgs: string[];
 }
 
-interface ValueCard {
-  id: string;
-  number: string;
-  title: string;
-  description: string;
-}
-
 const decorativeThumbPool = [comic1, comic2, comic3, p1Img, p2Img];
+
+const defaultProcessSteps: ValueCardItem[] = [
+  { id: '1', title: 'Discover', description: 'We start by understanding your goals, audience, and the story you need told, grounding every decision in a clear creative brief.' },
+  { id: '2', title: 'Design', description: 'Concepts, character studies, and layout exploration follow, refined through iteration until the direction feels right.' },
+  { id: '3', title: 'Create', description: 'Full production begins: inking, coloring, and page assembly, crafted with the same discipline at every stage.' },
+  { id: '4', title: 'Deliver', description: 'Final review, polish, and handoff of production-ready files, with support available after launch.' },
+];
 
 // Statistics are stored in the DB as plain display strings (e.g. "148+", "99.8%", "$1M")
 // since that's what the admin actually types in. To preserve the count-up animation,
@@ -40,17 +41,12 @@ export default function StudioSection() {
   const navigate = useNavigate();
   const [hoveredMetricId, setHoveredMetricId] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [valueCards, setValueCards] = useState<ValueCardItem[]>(defaultProcessSteps);
 
   const [studioConfig, setStudioConfig] = useState<{
     heading: string;
     subtitle: string;
     storyParagraphs: string[];
-    missionTitle: string;
-    missionDesc: string;
-    visionTitle: string;
-    visionDesc: string;
-    philosophyTitle: string;
-    philosophyDesc: string;
     buttonText: string;
     buttonUrl: string;
   }>({
@@ -62,12 +58,6 @@ export default function StudioSection() {
       'We collaborate with visionary writers, independent creators, publishers, and brands worldwide to transform imaginative concepts into striking visual worlds.',
       'Every commission progresses from initial character concept sketches and page layouts to fine line inking, expressive color scripting, and final publication prep.',
     ],
-    missionTitle: 'Discover',
-    missionDesc: 'We start by understanding your goals, audience, and the story you need told, grounding every decision in a clear creative brief.',
-    visionTitle: 'Design',
-    visionDesc: 'Concepts, character studies, and layout exploration follow, refined through iteration until the direction feels right.',
-    philosophyTitle: 'Create',
-    philosophyDesc: 'Full production begins: inking, coloring, and page assembly, crafted with the same discipline at every stage.',
     buttonText: 'View Studio',
     buttonUrl: '/studio',
   });
@@ -87,12 +77,6 @@ export default function StudioSection() {
               .map((p) => p.trim())
               .filter(Boolean)
           : prev.storyParagraphs,
-        missionTitle: 'Discover',
-        missionDesc: home.mission_statement || prev.missionDesc,
-        visionTitle: 'Design',
-        visionDesc: home.vision_statement || prev.visionDesc,
-        philosophyTitle: 'Create',
-        philosophyDesc: home.philosophy_statement || prev.philosophyDesc,
       }));
 
       if (home.statistics_json && home.statistics_json.length > 0) {
@@ -114,6 +98,14 @@ export default function StudioSection() {
             };
           })
         );
+      }
+    });
+
+    // Our Process: single source of truth shared with the Studio page — same
+    // /studio API, same value_cards array. Supports any number of steps.
+    adminApi.getStudioData().then((studio) => {
+      if (studio?.value_cards && studio.value_cards.length > 0) {
+        setValueCards(studio.value_cards);
       }
     });
 
@@ -139,27 +131,6 @@ export default function StudioSection() {
       .catch((e) => console.warn('Using default studio section button config', e));
   }, []);
 
-  const valueCards: ValueCard[] = [
-    {
-      id: 'v1',
-      number: '01 / Mission',
-      title: studioConfig.missionTitle,
-      description: studioConfig.missionDesc,
-    },
-    {
-      id: 'v2',
-      number: '02 / Vision',
-      title: studioConfig.visionTitle,
-      description: studioConfig.visionDesc,
-    },
-    {
-      id: 'v3',
-      number: '03 / Philosophy',
-      title: studioConfig.philosophyTitle,
-      description: studioConfig.philosophyDesc,
-    },
-  ];
-
   const initialMetrics: Metric[] = [
     { id: 'm1', label: 'Projects Completed', target: 148, suffix: '+', current: 0, thumbImgs: [comic1, comic2, comic3, p1Img, p2Img] },
     { id: 'm2', label: 'Clients Served', target: 62, suffix: '', current: 0, thumbImgs: [comic2, comic3, p1Img, p2Img, comic1] },
@@ -167,6 +138,7 @@ export default function StudioSection() {
     { id: 'm4', label: 'Client Satisfaction', target: 99.8, suffix: '%', current: 0, thumbImgs: [p1Img, p2Img, comic1, comic2, comic3] },
     { id: 'm5', label: 'Client Capital Raised', target: 1, prefix: '$', suffix: 'M', current: 0, thumbImgs: [p2Img, comic1, comic2, comic3, p1Img] },
   ];
+
 
   const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
 
@@ -369,16 +341,16 @@ export default function StudioSection() {
 
       {/* 3. Statistics Section - Animated numbers with emerging thumbnails */}
       <div className="max-w-7xl mx-auto w-full pt-12 border-t border-black/15">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
           {metrics.map((m) => {
             const isHovered = hoveredMetricId === m.id;
 
             return (
               <div
                 key={m.id}
+                className="basis-[42%] sm:basis-[28%] lg:basis-[17%] flex-shrink-0 relative group transition-all duration-300 ease-out"
                 onMouseEnter={() => handleMetricHover(m.id, m.target)}
                 onMouseLeave={() => setHoveredMetricId(null)}
-                className="relative group transition-all duration-300 ease-out"
               >
                 {/* 5 Artwork thumbnails emerging sequentially on hover */}
                 {m.thumbImgs.map((imgSrc, imgIdx) => {

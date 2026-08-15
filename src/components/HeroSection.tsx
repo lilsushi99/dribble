@@ -77,6 +77,7 @@ export default function HeroSection({
   const handlePrimaryClick = () => {
     const url = (content.hero_cta_primary_url || '').trim();
     if (!url || url === '#') {
+      adminApi.trackEvent('chat_click', 'home');
       const api = window.Tawk_API as any;
       if (api?.maximize) api.maximize();
       else if (api?.toggle) api.toggle();
@@ -84,6 +85,7 @@ export default function HeroSection({
       else onOpenBookCall();
       return;
     }
+    adminApi.trackEvent('cta_click', 'home');
     if (/^https?:\/\//i.test(url)) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
@@ -94,9 +96,11 @@ export default function HeroSection({
   const handleSecondaryClick = () => {
     const url = (content.hero_cta_secondary_url || '').trim();
     if (!url || url === '#') {
+      adminApi.trackEvent('portfolio_click', 'home');
       onViewProjects();
       return;
     }
+    adminApi.trackEvent('cta_click', 'home');
     if (/^https?:\/\//i.test(url)) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {

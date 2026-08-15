@@ -4,6 +4,7 @@ import { adminApi, defaultBlogPosts } from '../admin/services/adminApi';
 import { BlogPostItem } from '../admin/types/admin.types';
 import { useSettings } from '../context/SettingsContext';
 import { useSeo } from '../hooks/useSeo';
+import { useTrackPageView } from '../hooks/useTrackPageView';
 
 interface BlogPageProps {
   onOpenBookCall?: () => void;
@@ -11,8 +12,9 @@ interface BlogPageProps {
 
 export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
   useSeo('blog');
+  useTrackPageView('blog');
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, loading: settingsLoading } = useSettings();
 
   const [posts, setPosts] = useState<BlogPostItem[]>(defaultBlogPosts);
   const [loading, setLoading] = useState(true);
@@ -64,6 +66,12 @@ export default function BlogPage({ onOpenBookCall }: BlogPageProps) {
   const handleSubscribeClick = () => {
     window.open(subscribeBtnUrl, '_blank');
   };
+
+  if (loading || settingsLoading) {
+    // Neutral placeholder matching the page's own background — avoids flashing
+    // fallback content before real data loads.
+    return <div className="min-h-screen w-full bg-[#050505]" />;
+  }
 
   return (
     <div className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3]">

@@ -178,7 +178,25 @@ export const adminApi = {
   },
 
   async getDashboardAnalytics(): Promise<DashboardAnalytics> {
-    return defaultAnalytics;
+    try {
+      return await request<DashboardAnalytics>('/analytics/dashboard');
+    } catch (e) {
+      return defaultAnalytics;
+    }
+  },
+
+  // Fire-and-forget analytics event tracking. Never throws — a tracking failure
+  // must never disrupt the visitor's experience.
+  async trackEvent(eventType: string, path: string, referrer?: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE}/analytics/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType, path, referrer: referrer ?? (typeof document !== 'undefined' ? document.referrer : undefined) }),
+      });
+    } catch (e) {
+      // Silently ignore — analytics is non-critical.
+    }
   },
 
   // Projects CMS

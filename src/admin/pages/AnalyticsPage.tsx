@@ -16,41 +16,84 @@ import {
   Compass,
 } from 'lucide-react';
 import { adminApi } from '../services/adminApi';
+import { DashboardAnalytics } from '../types/admin.types';
+
+// Small, non-exhaustive lookup so common country codes show a readable name — falls back
+// to the raw code for anything not listed rather than guessing.
+const COUNTRY_NAMES: Record<string, string> = {
+  US: 'United States', GB: 'United Kingdom', DE: 'Germany', FR: 'France', JP: 'Japan',
+  CA: 'Canada', AU: 'Australia', NG: 'Nigeria', IN: 'India', BR: 'Brazil', ES: 'Spain',
+  IT: 'Italy', NL: 'Netherlands', SE: 'Sweden', SG: 'Singapore', ZA: 'South Africa',
+  Unknown: 'Unknown',
+};
+
+const DEVICE_ICONS: Record<string, any> = {
+  desktop: Laptop,
+  mobile: Smartphone,
+  tablet: Compass,
+  Unknown: Globe,
+};
 
 export const AnalyticsPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '1y'>('7d');
+  const [data, setData] = useState<DashboardAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [stats, setStats] = useState({
-    totalVisitors: 14280,
-    totalPageViews: 48920,
-    totalCtaClicks: 3140,
-    conversionRate: '6.4%',
-    avgSessionDuration: '3m 42s',
-    topPages: [
-      { path: '/', views: 21400, percentage: '43.7%' },
-      { path: '/projects', views: 12800, percentage: '26.1%' },
-      { path: '/studio', views: 8200, percentage: '16.7%' },
-      { path: '/blog', views: 4120, percentage: '8.4%' },
-      { path: '/contact', views: 2400, percentage: '4.9%' },
-    ],
-    devices: [
-      { name: 'Desktop (macOS / Windows)', count: 9840, percentage: '68.9%', icon: Laptop },
-      { name: 'Mobile (iOS / Android)', count: 3820, percentage: '26.7%', icon: Smartphone },
-      { name: 'Tablet (iPadOS)', count: 620, percentage: '4.4%', icon: Compass },
-    ],
-    countries: [
-      { code: 'US', country: 'United States', visitors: 6120, percentage: '42.8%' },
-      { code: 'GB', country: 'United Kingdom', visitors: 2840, percentage: '19.8%' },
-      { code: 'DE', country: 'Germany', visitors: 1950, percentage: '13.6%' },
-      { code: 'JP', country: 'Japan', visitors: 1420, percentage: '9.9%' },
-      { code: 'CA', country: 'Canada', visitors: 980, percentage: '6.8%' },
-    ],
-    ctaEvents: [
-      { name: 'Commission Inquiry Form Submission', count: 840, target: '/contact' },
-      { name: 'Project PDF Pitchdeck Download', count: 1260, target: 'Media Library' },
-      { name: 'Explore Studio Manifesto Modal', count: 1040, target: '/studio' },
-    ],
-  });
+  useEffect(() => {
+    let isMounted = true;
+    adminApi.getDashboardAnalytics().then((result) => {
+      if (isMounted) {
+        setData(result);
+        setLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalVisitors = data?.totalVisitors || 0;
+  const totalPageViews = data?.totalPageViews || 0;
+  const totalCtaClicks = data?.ctaClicks || 0;
+  const conversionRate = totalVisitors > 0 ? `${((totalCtaClicks / totalVisitors) * 100).toFixed(1)}%` : '0%';
+
+  const knownPageViews = (data?.homeViews || 0) + (data?.projectsListViews || 0) + (data?.studioViews || 0) + (data?.blogViews || 0) + (data?.contactViews || 0);
+  const topPages = [
+    { path: '/', views: data?.homeViews || 0 },
+    { path: '/projects', views: data?.projectsListViews || 0 },
+    { path: '/studio', views: data?.studioViews || 0 },
+    { path: '/blog', views: data?.blogViews || 0 },
+    { path: '/contact', views: data?.contactViews || 0 },
+  ]
+    .sort((a, b) => b.views - a.views)
+    .map((p) => ({
+      ...p,
+      percentage: knownPageViews > 0 ? `${((p.views / knownPageViews) * 100).toFixed(1)}%` : '0%',
+    }));
+
+  const devices = (data?.deviceBreakdown || []).map((d) => ({
+    name: d.name,
+    count: d.value,
+    percentage: `${d.value}%`,
+    icon: DEVICE_ICONS[d.name] || Globe,
+  }));
+
+  const countries = (data?.countryBreakdown || []).map((c) => ({
+    code: c.code,
+    country: COUNTRY_NAMES[c.code] || c.code,
+    visitors: c.visitors,
+    percentage: `${c.percentage}%`,
+  }));
+
+  const ctaEvents = [
+    { name: 'Chat Widget Opened', count: data?.chatClicks || 0, target: 'Live chat' },
+    { name: 'Book a Call Clicked', count: data?.bookCallClicks || 0, target: 'Booking modal' },
+    { name: 'View Portfolio Clicked', count: data?.portfolioClicks || 0, target: '/projects' },
+  ];
+
+  if (loading) {
+    return <div className="p-10 text-center text-xs text-slate-400">Loading analytics...</div>;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -94,10 +137,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-              {stats.totalVisitors.toLocaleString()}
-            </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
-              <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> +14.2%
+              {totalVisitors.toLocaleString()}
             </span>
           </div>
         </Card>
@@ -111,10 +151,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-              {stats.totalPageViews.toLocaleString()}
-            </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
-              <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> +18.6%
+              {totalPageViews.toLocaleString()}
             </span>
           </div>
         </Card>
@@ -128,10 +165,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-              {stats.totalCtaClicks.toLocaleString()}
-            </span>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
-              <TrendingUp className="w-3.5 h-3.5 mr-0.5" /> +8.1%
+              {totalCtaClicks.toLocaleString()}
             </span>
           </div>
         </Card>
@@ -145,9 +179,9 @@ export const AnalyticsPage: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-              {stats.conversionRate}
+              {conversionRate}
             </span>
-            <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Avg session: {stats.avgSessionDuration}</span>
+            <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">CTA clicks / visitors</span>
           </div>
         </Card>
       </div>
@@ -161,7 +195,7 @@ export const AnalyticsPage: React.FC = () => {
           </h3>
 
           <div className="space-y-3">
-            {stats.topPages.map((page, idx) => (
+            {topPages.map((page, idx) => (
               <div key={idx} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">{page.path}</span>
@@ -188,7 +222,7 @@ export const AnalyticsPage: React.FC = () => {
           </h3>
 
           <div className="space-y-4">
-            {stats.devices.map((device, idx) => {
+            {devices.map((device, idx) => {
               const DeviceIcon = device.icon;
               return (
                 <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-800 flex items-center justify-between">
@@ -215,7 +249,7 @@ export const AnalyticsPage: React.FC = () => {
           </h3>
 
           <div className="space-y-3">
-            {stats.countries.map((c, idx) => (
+            {countries.map((c, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800/40">
                 <div className="flex items-center gap-2.5">
                   <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 font-bold text-slate-700 dark:text-zinc-300">
@@ -239,7 +273,7 @@ export const AnalyticsPage: React.FC = () => {
           </h3>
 
           <div className="space-y-3">
-            {stats.ctaEvents.map((cta, idx) => (
+            {ctaEvents.map((cta, idx) => (
               <div key={idx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-800 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <h4 className="font-bold text-slate-900 dark:text-zinc-100">{cta.name}</h4>

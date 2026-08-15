@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Project } from '../types';
 import { X, ArrowRight } from 'lucide-react';
+import { adminApi } from '../admin/services/adminApi';
 
 interface ProjectModalProps {
   project: Project | null;
@@ -7,6 +9,12 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+  useEffect(() => {
+    if (project) {
+      adminApi.trackEvent('project_view', String(project.id));
+    }
+  }, [project]);
+
   if (!project) return null;
 
   return (

@@ -623,31 +623,12 @@ export const HomeCmsManager: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-200 dark:border-zinc-800">
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 1 ("Discover")</label>
-                    <Textarea
-                      rows={3}
-                      value={home.mission_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, mission_statement: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 2 ("Design")</label>
-                    <Textarea
-                      rows={3}
-                      value={home.vision_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, vision_statement: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-zinc-300 font-semibold mb-1">Process Step 3 ("Create")</label>
-                    <Textarea
-                      rows={3}
-                      value={home.philosophy_statement || ''}
-                      onChange={(e) => setHome((prev) => ({ ...prev, philosophy_statement: e.target.value }))}
-                    />
-                  </div>
+                <div className="pt-2 border-t border-slate-200 dark:border-zinc-800">
+                  <p className="text-slate-500 dark:text-zinc-400">
+                    "Our Process" (the numbered timeline shown below the story) is edited from
+                    Content Management → Studio → Process Steps — the same data powers both this
+                    homepage section and the Studio page, so there's one place to manage it.
+                  </p>
                 </div>
 
                 <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-3">

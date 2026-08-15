@@ -226,8 +226,11 @@ export interface FormFieldSpec {
 
 export interface DashboardAnalytics {
   totalVisitors: number;
+  totalPageViews?: number;
   visitorsToday: number;
   visitorsThisMonth: number;
+  homeViews?: number;
+  projectsListViews?: number;
   projectViews: number;
   studioViews: number;
   blogViews: number;

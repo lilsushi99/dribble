@@ -3,6 +3,7 @@ import { Project } from '../types';
 import { useSettings } from '../context/SettingsContext';
 import { adminApi } from '../admin/services/adminApi';
 import { useSeo } from '../hooks/useSeo';
+import { useTrackPageView } from '../hooks/useTrackPageView';
 
 import p1Img from '../assets/images/project_artwork_1_1785513185877.jpg';
 import p2Img from '../assets/images/project_artwork_2_1785513204720.jpg';
@@ -118,11 +119,12 @@ interface ProjectsPageProps {
 
 export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNavigateToContact }: ProjectsPageProps) {
   useSeo('projects');
-  const { settings } = useSettings();
+  useTrackPageView('projects');
+  const { settings, loading: settingsLoading } = useSettings();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [projects, setProjects] = useState<Project[]>(defaultProjectsList);
+  const [projects, setProjects] = useState<Project[] | null>(null);
 
   useEffect(() => {
     async function loadProjects() {
@@ -147,9 +149,12 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
               gallery_images: p.gallery_images,
             }));
           setProjects(mapped);
+        } else {
+          setProjects(defaultProjectsList);
         }
       } catch (err) {
         console.warn('Could not load dynamic projects:', err);
+        setProjects(defaultProjectsList);
       }
     }
     loadProjects();
@@ -194,6 +199,12 @@ export default function ProjectsPage({ onSelectProject, onOpenBookCall, onNaviga
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  if (projects === null || settingsLoading) {
+    // Neutral placeholder matching the page's own background — avoids flashing
+    // fallback content before real data loads.
+    return <div className="min-h-screen w-full bg-[#050505]" />;
+  }
 
   return (
     <div ref={containerRef} className="pt-28 pb-20 px-6 sm:px-12 md:px-16 max-w-7xl mx-auto space-y-20 bg-[#050505] text-[#f3f3f3] overflow-hidden">
