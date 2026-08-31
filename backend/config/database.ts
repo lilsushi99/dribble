@@ -19,6 +19,7 @@ const dbConfig = {
 export const pool = mysql.createPool(dbConfig);
 
 let isPoolConnected = false;
+let lastConnectionError: string | null = null;
 
 // Check connection health on startup
 export async function testDatabaseConnection(): Promise<boolean> {
@@ -27,16 +28,36 @@ export async function testDatabaseConnection(): Promise<boolean> {
     logger.info('MySQL Database connected successfully to ' + dbConfig.host);
     connection.release();
     isPoolConnected = true;
+    lastConnectionError = null;
     return true;
   } catch (error: any) {
     logger.warn('MySQL pool connection notice: ' + error.message + '. Operating with high-availability memory store.');
     isPoolConnected = false;
+    lastConnectionError = `${error.code || 'ERROR'}: ${error.message}`;
     return false;
   }
 }
 
 export function isDbConnected(): boolean {
   return isPoolConnected;
+}
+
+export function getLastDbError(): string | null {
+  return lastConnectionError;
+}
+
+export function getDbConfigSummary() {
+  // Never expose the actual password. Only enough to confirm which values are
+  // actually being used at runtime, since env vars can silently differ from what's
+  // set in a hosting panel (typos, wrong app, stale cached value, etc.).
+  return {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    user: dbConfig.user,
+    database: dbConfig.database,
+    password_set: !!dbConfig.password,
+    password_length: dbConfig.password ? dbConfig.password.length : 0,
+  };
 }
 
 // Wrapper to safely execute MySQL queries

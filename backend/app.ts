@@ -5,7 +5,7 @@ import fs from 'fs';
 import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { SeoService } from './services/seo.service';
-import { isDbConnected, testDatabaseConnection } from './config/database';
+import { isDbConnected, testDatabaseConnection, getLastDbError, getDbConfigSummary } from './config/database';
 import { UPLOAD_ROOT } from './config/upload';
 
 const app = express();
@@ -59,6 +59,11 @@ app.get('/api/health', async (req, res) => {
       connected: dbConnected,
       mode: dbConnected ? 'mysql' : 'in-memory fallback (changes will NOT be saved permanently)',
       missing_env_vars: missingEnvVars.length > 0 ? missingEnvVars : undefined,
+      // If connected is false but missing_env_vars is empty, the vars are set but wrong
+      // (bad password, wrong host, wrong database name, or the DB server is unreachable
+      // from this app). last_error and config below pinpoint which.
+      last_error: dbConnected ? undefined : getLastDbError(),
+      config_in_use: getDbConfigSummary(),
     },
     uploads: {
       path: UPLOAD_ROOT,
